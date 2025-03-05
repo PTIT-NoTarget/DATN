@@ -9,8 +9,8 @@
 
 ### Step 1: Clone the repository
 ```bash
-git clone <repository-url>
-cd <repository-folder>
+git clone [<repository-url>](https://github.com/PTIT-NoTarget/DATN)
+cd DATN
 ```
 ### Step 2: Backend Setup
 #### Configure database
