@@ -1,5 +1,5 @@
 # Installation and Setup Guide
-
+Link đồ án: https://drive.google.com/file/d/1LwKIaebbUAluBD0Zh46JGOPOHfkVUhTU/view?usp=sharing
 ## Prerequisites
 - Node.js (version 22)
 - npm
