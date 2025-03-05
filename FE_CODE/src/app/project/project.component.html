@@ -1,0 +1,8 @@
+<div class="w-full h-full flex">
+  <app-navigation [expanded]="expanded" (manualToggle)="manualToggle()"></app-navigation>
+  <div id="content">
+    <app-header class="sticky top-0 z-[999]"></app-header>
+    <router-outlet></router-outlet>
+  </div>
+</div>
+<svg-definitions></svg-definitions>

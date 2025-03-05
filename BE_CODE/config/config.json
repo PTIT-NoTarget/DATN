@@ -1,0 +1,23 @@
+{
+  "development": {
+    "username": "root",
+    "password": "12345678",
+    "database": "daily_dev",
+    "host": "localhost",
+    "dialect": "mysql"
+  },
+  "test": {
+    "username": "root",
+    "password": "Tung4922@",
+    "database": "daily_dev",
+    "host": "localhost",
+    "dialect": "mysql"
+  },
+  "production": {
+    "username": "root",
+    "password": "Tung4922@",
+    "database": "daily_dev",
+    "host": "localhost",
+    "dialect": "mysql"
+  }
+}

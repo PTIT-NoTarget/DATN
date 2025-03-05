@@ -1,0 +1,55 @@
+<form [formGroup]="form" class="p-6 pb-12">
+  <p *ngIf="mode === 0" class="text-xl font-semibold mb-4">
+    Thêm mới phòng ban
+  </p>
+  <p *ngIf="mode === 1" class="text-xl font-semibold mb-4">
+    Chỉnh sửa phòng ban
+  </p>
+
+  <div class="mb-4">
+    <p class="mb-2">Tên phòng ban</p>
+    <input
+      formControlName="name"
+      nz-input
+      type="text"
+      placeholder="Tên phòng ban"
+    />
+  </div>
+  <div class="mb-4">
+    <p class="mb-2">Quản lý</p>
+    <nz-select class="w-full" formControlName="manager_id" [nzCustomTemplate]="assigneesSelectedTmpl"
+      [nzNotFoundContent]="noUserFoundTmpl" nzNoAnimation>
+      <nz-option nzCustomContent *ngFor="let user of users" [nzValue]="user.id" [nzLabel]="user.fullName">
+        <j-user [user]="user"></j-user>
+      </nz-option>
+    </nz-select>
+  </div>
+  <div class="float-right">
+    <button (click)="close()" nz-button class="mr-3">Hủy</button>
+    <button
+      *ngIf="mode === 0"
+      [disabled]="isLoading"
+      (click)="addDepartment()"
+      nz-button
+      nzType="primary"
+    >
+      Thêm mới
+    </button>
+    <button
+      *ngIf="mode === 1"
+      [disabled]="isLoading"
+      (click)="updateDepartment()"
+      nz-button
+      nzType="primary"
+    >
+      Chỉnh sửa
+    </button>
+  </div>
+</form>
+
+<ng-template #noUserFoundTmpl>
+  No user found.
+</ng-template>
+<ng-template #assigneesSelectedTmpl let-selected>
+  <j-user [user]="getUser()"></j-user>
+</ng-template>

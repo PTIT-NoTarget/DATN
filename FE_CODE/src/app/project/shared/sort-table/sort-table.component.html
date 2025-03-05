@@ -1,0 +1,31 @@
+<nz-table class="border-[1px] border-[#f5f5f5]" #sortTable [nzData]="data" [nzPageSize]="pageSize" nzTableLayout="fixed"
+  [nzShowPagination]="false">
+  <thead>
+    <tr>
+      <th *ngFor="let column of colTitle" [nzSortFn]="column.compare" [nzSortPriority]="column.priority">
+        {{ column.title }}
+      </th>
+    </tr>
+  </thead>
+  <tbody>
+    <ng-container *ngIf="loaded; else loadingTmpl">
+      <tr *ngFor="let row of sortTable.data; index as i">
+        <ng-container *ngTemplateOutlet="rows; context: { $implicit: row, index: i }" ;>
+        </ng-container>
+      </tr>
+    </ng-container>
+  </tbody>
+</nz-table>
+<div class="flex space-x-2 items-center float-right py-5">
+  <span>Tổng số {{ total }} kết quả</span>
+  <nz-pagination [nzPageIndex]="pageIndex" [nzTotal]="total" nzShowSizeChanger [nzPageSize]="pageSize"
+    (nzPageSizeChange)="onPageSizeChange($event)" (nzPageIndexChange)="pageIndexChange.emit($event)" [nzSize]="'small'"
+    [nzPageSizeOptions]="[10,30,50,100]"></nz-pagination>
+</div>
+<ng-template #loadingTmpl>
+  <tr class="w-full relative h-0">
+    <div class="flex items-center justify-center h-14 absolute top-12 inset-x-0">
+      <nz-spin nzSize="large"></nz-spin>
+    </div>
+  </tr>
+</ng-template>

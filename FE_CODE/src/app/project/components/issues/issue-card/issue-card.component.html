@@ -1,0 +1,44 @@
+<div class="issue-wrap">
+  <div (click)="openIssueModal(issue?.id!)" class="issue">
+    <div class="flex justify-between mb-2">
+      <div></div>
+      <a nz-dropdown [nzDropdownMenu]="menu">
+        <span class="cursor-pointer" nz-icon nzType="ellipsis" nzTheme="outline"></span>
+      </a>
+      <nz-dropdown-menu #menu="nzDropdownMenu">
+        <ul nz-menu nzSelectable>
+          <li nz-menu-item>
+            <a nz-popconfirm nzPopconfirmTitle="Bán có chắc xóa công việc?" nzOkText="Xóa" nzCancelText="Hủy"
+              (nzOnConfirm)="deleteTask(issue?.id!)">
+              Xóa công việc
+            </a>
+          </li>
+        </ul>
+      </nz-dropdown-menu>
+    </div>
+    <p class="pb-3 text-15 text-textDarkest">
+      {{ issue?.title }}
+    </p>
+    <div class="flex items-center justify-between">
+      <div class="flex items-center ml-1">
+        <j-avatar [className]="'shadow-outline-white -ml-1'" [size]="24" nz-tooltip
+          [nzTooltipMouseEnterDelay]="0.3" nzTooltipTitle="Assignee: {{ getUserDetail(issue?.reporterId!)?.fullName }}" nzTooltipPlacement="bottom"
+          [avatarUrl]="getUserDetail(issue?.reporterId!)?.avatarUrl">
+        </j-avatar>
+        <span [class.ml-2]="issue?.reporterId" class="uppercase">
+          {{issue?.type}}-{{issue?.id}}
+        </span>
+      </div>
+      <div class="flex items-center">
+        <svg-icon class="mr-1 text-textMedium" [name]="issueTypeIcon" nz-tooltip [nzTooltipMouseEnterDelay]="0.3"
+          [nzTooltipTitle]="issue?.type" nzTooltipPlacement="bottom" [size]="20">
+        </svg-icon>
+
+        <svg-icon [name]="priorityIcon?.icon!" nz-tooltip [nzTooltipMouseEnterDelay]="0.3"
+          [nzTooltipTitle]="priorityIcon?.value" nzTooltipPlacement="bottom" [size]="20"
+          [style.color]="priorityIcon?.color">
+        </svg-icon>
+      </div>
+    </div>
+  </div>
+</div>

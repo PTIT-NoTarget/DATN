@@ -1,0 +1,26 @@
+<div class="py-8 px-12">
+  <p class="text-xl font-semibold mb-8">Hồ sơ cá nhân</p>
+  <div *ngIf="authQuery.user$ | async as user" class="flex justify-between w-[700px] ml-[80px]">
+    <div class="flex gap-12">
+      <div>
+        <p class="text-lg leading-8 my-6 font-medium">ID</p>
+        <p class="text-lg leading-8 my-6 font-medium">Họ và tên</p>
+        <p class="text-lg leading-8 my-6 font-medium">Ngày sinh</p>
+        <p class="text-lg leading-8 my-6 font-medium">Giới tính</p>
+        <p class="text-lg leading-8 my-6 font-medium">Chức vụ 1</p>
+        <p class="text-lg leading-8 my-6 font-medium">Chức vụ 2</p>
+      </div>
+      <div>
+        <p class="text-lg leading-8 my-6">{{user.id}}</p>
+        <p class="text-lg leading-8 my-6">{{user.fullName}}</p>
+        <p class="text-lg leading-8 my-6">{{(user.dob | date:'yyyy-MM-dd') ?? '0000-00-00'}}</p>
+        <p class="text-lg leading-8 my-6">{{user.sex === '0' ? 'Nam' : 'Nữ'}}</p>
+        <p class="text-lg leading-8 my-6">Nhân viên</p>
+        <p class="text-lg leading-8 my-6">Lập trình viên</p>
+      </div>
+    </div>
+    <div>
+      <app-upload [mode]="1" [imgUrlInput]="user.avatarUrl" (upload)="updateUser($event)"></app-upload>
+    </div>
+  </div>
+</div>

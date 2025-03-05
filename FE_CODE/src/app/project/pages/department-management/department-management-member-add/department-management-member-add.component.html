@@ -1,0 +1,35 @@
+<div class="p-6">
+  <p class="mb-5 text-lg font-semibold">Quản lý thành viên phòng ban</p>
+
+  <div class="flex justify-between items-center">
+    <nz-select class="w-full" [(ngModel)]="selectedUserId" [nzCustomTemplate]="assigneesSelectedTmpl"
+      [nzNotFoundContent]="noUserFoundTmpl" nzNoAnimation>
+      <nz-option nzCustomContent *ngFor="let user of getListUser()" [nzValue]="user.id" [nzLabel]="user.fullName">
+        <j-user [user]="user"></j-user>
+      </nz-option>
+    </nz-select>
+    <button [disabled]="selectedUserId < 0" (click)="addMembersToDepartment()" nz-button nzType="primary"
+      class="ml-4">Thêm thành viên</button>
+  </div>
+
+  <div *ngIf="listMember.length !== 0">
+    <div *ngFor="let user of listMember" class="my-4 flex justify-between items-center">
+      <j-user [user]="user"></j-user>
+      <a nz-popconfirm nzPopconfirmTitle="Bán có chắc xóa thành viên này?" nzOkText="Xóa" nzCancelText="Hủy"
+        (nzOnConfirm)="deleteMember(user.id)">
+        <div class="cursor-pointer">x</div>
+      </a>
+    </div>
+  </div>
+
+  <div *ngIf="listMember.length === 0" class="text-center my-10">
+    Chưa có thành viên
+  </div>
+</div>
+
+<ng-template #assigneesSelectedTmpl let-selected>
+  <j-user [user]="getMemberUser(selected.nzValue)"></j-user>
+</ng-template>
+<ng-template #noUserFoundTmpl>
+  No user found.
+</ng-template>

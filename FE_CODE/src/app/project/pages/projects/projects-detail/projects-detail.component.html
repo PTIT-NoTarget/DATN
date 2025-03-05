@@ -1,0 +1,9 @@
+<breadcrumbs [items]="breadcrumbs"></breadcrumbs>
+<header class="flex justify-between mt-3 text-textDarkest">
+  <div class="text-2xl font-medium">Chi tiết dự án</div>
+  <button (click)="showModal()" nz-button>
+    Thêm mới công việc
+  </button>
+</header>
+<board-filter></board-filter>
+<board-dnd *ngIf="projectId"></board-dnd>

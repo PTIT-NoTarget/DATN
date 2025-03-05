@@ -1,0 +1,43 @@
+<div class="p-6">
+  <p class="text-xl font-semibold mb-4">Công việc của tôi</p>
+  <form [formGroup]="form" class="grid grid-cols-5 gap-x-8">
+    <div class="mb-4">
+      <p class="mb-2">ID</p>
+      <input formControlName="id" nz-input type="number" placeholder="Id" />
+    </div>
+    <div class="mb-4">
+      <p class="mb-2">Tên công việc</p>
+      <input formControlName="title" nz-input type="text" placeholder="Tên công việc" />
+    </div>
+    <div class="mb-4">
+      <p class="mb-2">Trạng thái</p>
+      <nz-select class="w-full" formControlName="status" nzShowSearch nzAllowClear nzPlaceHolder="Trạng thái">
+        <nz-option *ngFor="let item of listStatus" [nzLabel]="item.label" [nzValue]="item.value"></nz-option>
+      </nz-select>
+    </div>
+    <div class="mb-4">
+      <p class="mb-2">Ngày tạo</p>
+      <nz-date-picker formControlName="createdAt" nzPlaceHolder="Ngày tạo" class="w-full"></nz-date-picker>
+    </div>
+    <div class="flex items-center mt-[10px]">
+      <button (click)="cancel()" nz-button class="mr-4">Hủy</button>
+      <button (click)="search()" nz-button nzType="primary">Tìm kiếm</button>
+    </div>
+  </form>
+  <div class="float-right mb-6">
+  </div>
+  <app-sort-table [colTitle]="listOfColumn" [loaded]="true" [data]="listOfData" [total]="totalCount"
+    [pageSize]="form.get('pageSize')?.value!" [pageIndex]="form.get('page')?.value!"
+    (pageIndexChange)="changePage($event)" (pageSizeChange)="changePageSize($event)">
+    <ng-template #rows let-row let-index="index">
+      <td (click)="openIssueModal(row.projectId, row.id)" class="truncate">{{ row.id }}</td>
+      <td (click)="openIssueModal(row.projectId, row.id)" class="truncate cursor-pointer">{{ row.title }}</td>
+      <td (click)="openIssueModal(row.projectId, row.id)" class="truncate cursor-pointer">{{ row.reporterName }}</td>
+      <td (click)="openIssueModal(row.projectId, row.id)" class="truncate cursor-pointer">{{ row.status }}</td>
+      <td (click)="openIssueModal(row.projectId, row.id)" class="truncate cursor-pointer">{{ row.projectName }}</td>
+      <td (click)="openIssueModal(row.projectId, row.id)" class="truncate cursor-pointer">{{ row.createdAt |
+        date:'yyyy-MM-dd' }}</td>
+      <!-- <td class="truncate">{{ row.endDate | date:'yyyy-MM-dd' }}</td> -->
+    </ng-template>
+  </app-sort-table>
+</div>

@@ -1,0 +1,34 @@
+<div class="p-6">
+  <p class="text-xl font-semibold mb-4">Quản lý thông báo</p>
+  <!-- <form [formGroup]="form" class="grid grid-cols-5 gap-x-8">
+    <div class="mb-4">
+      <p class="mb-2">Tên thông báo</p>
+      <input formControlName="message" nz-input type="text" placeholder="Tên phòng ban" />
+    </div>
+    <div class="flex items-center mt-[10px]">
+      <button (click)="cancel()" nz-button class="mr-4">Hủy</button>
+      <button (click)="search()" nz-button nzType="primary">Tìm kiếm</button>
+    </div>
+  </form> -->
+  <div class="float-right mb-6">
+    <button (click)="openEditModal()" nz-button>Gửi thông báo</button>
+  </div>
+  <app-sort-table [colTitle]="listOfColumn" [loaded]="true" [data]="listOfData" [total]="totalCount"
+    [pageSize]="form.get('pageSize')?.value!" [pageIndex]="form.get('page')?.value!"
+    (pageIndexChange)="changePage($event)" (pageSizeChange)="changePageSize($event)">
+    <ng-template #rows let-row let-index="index">
+      <td class="truncate">{{ row.id }}</td>
+      <td class="truncate">{{ row.message }}</td>
+      <td class="truncate">{{ row.createdAt | date:'yyyy-MM-dd' }}</td>
+      <td class="truncate">{{ row.updatedAt | date:'yyyy-MM-dd' }}</td>
+      <td class="flex items-center">
+        <span (click)="openEditModal(row.id)" nz-icon nzType="edit" nzTheme="outline"
+          class="text-lg mr-2 cursor-pointer hover:text-blue-500"></span>
+        <a nz-popconfirm nzPopconfirmTitle="Bạn có chắc chắn xóa thông báo này?" nzPopconfirmPlacement="bottom"
+          (nzOnConfirm)="deleteNoti(row.id)">
+          <i class="fa-solid fa-trash text-base mr-2 cursor-pointer hover:text-red-500"></i>
+        </a>
+      </td>
+    </ng-template>
+  </app-sort-table>
+</div>

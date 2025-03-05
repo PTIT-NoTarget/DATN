@@ -1,0 +1,76 @@
+<form [formGroup]="form" class="p-6 pb-12">
+  <p *ngIf="mode === 0" class="text-xl font-semibold mb-4">
+    Thêm mới người dùng
+  </p>
+  <p *ngIf="mode === 1" class="text-xl font-semibold mb-4">
+    Chỉnh sửa người dùng
+  </p>
+  <p *ngIf="mode === 2" class="text-xl font-semibold mb-4">
+    Thông tin người dùng
+  </p>
+
+  <div class="mb-4 mt-6">
+    <app-upload [mode]="mode" [imgUrlInput]="form.get('avatarUrl')?.value" (upload)="onUpload($event)"></app-upload>
+  </div>
+  <div class="mb-4">
+    <p class="mb-2">Username</p>
+    <input formControlName="username" nz-input type="text" placeholder="Username" />
+  </div>
+  <div class="mb-4">
+    <p class="mb-2">Họ và tên</p>
+    <input formControlName="fullName" nz-input type="text" placeholder="Họ và tên" />
+  </div>
+  <div class="mb-4">
+    <p class="mb-2">Email</p>
+    <input formControlName="email" nz-input type="text" placeHolder="Email" />
+  </div>
+  <div class="mb-4">
+    <p class="mb-2">Ngày sinh</p>
+    <nz-date-picker formControlName="dob" nzPlaceHolder="Ngày sinh" class="w-full"></nz-date-picker>
+  </div>
+  <div class="mb-4">
+    <p class="mb-2">Giới tính</p>
+    <nz-select [disabled]="mode === 2" formControlName="sex" nzPlaceHolder="Chọn giới tính" class="w-full">
+      <nz-option *ngFor="let item of genders" [nzLabel]="item.label" [nzValue]="item.value"></nz-option>
+    </nz-select>
+  </div>
+  <div class="mb-4">
+    <p class="mb-2">Chức vụ</p>
+    <nz-select [disabled]="mode === 2" formControlName="position" nzPlaceHolder="Chức vụ" class="w-full">
+      <nz-option *ngFor="let item of positions" [nzLabel]="item.label" [nzValue]="item.value"></nz-option>
+    </nz-select>
+  </div>
+  <div class="mb-4">
+    <p class="mb-2">Vị trí</p>
+    <nz-select [disabled]="mode === 2" formControlName="position_1" nzPlaceHolder="Vị trí" class="w-full">
+      <nz-option *ngFor="let item of positions_1" [nzLabel]="item.label" [nzValue]="item.value"></nz-option>
+    </nz-select>
+  </div>
+  <div class="mb-4">
+    <p class="mb-2">Level</p>
+    <nz-select [disabled]="mode === 2" formControlName="position_level" nzPlaceHolder="Level" class="w-full">
+      <nz-option *ngFor="let item of position_level" [nzLabel]="item.label" [nzValue]="item.value"></nz-option>
+    </nz-select>
+  </div>
+  <div class="mb-4">
+    <p class="mb-2">Phân quyền</p>
+    <nz-select [disabled]="mode === 2" formControlName="role" nzPlaceHolder="Phân quyền" class="w-full">
+      <nz-option *ngFor="let item of roles" [nzLabel]="item.label" [nzValue]="item.value"></nz-option>
+    </nz-select>
+  </div>
+  <div class="mb-4">
+    <p class="mb-2">Ngày bắt đầu làm việc</p>
+    <nz-date-picker formControlName="start_date" nzPlaceHolder="Ngày bắt đầu làm việc" class="w-full"></nz-date-picker>
+  </div>
+  <div class="float-right">
+    <button *ngIf="mode === 0 || mode === 1" (click)="close()" nz-button class="mr-3">
+      Hủy
+    </button>
+    <button *ngIf="mode === 0" [disabled]="isLoading" (click)="addUser()" nz-button nzType="primary">
+      Thêm mới
+    </button>
+    <button *ngIf="mode === 1" [disabled]="isLoading" (click)="updateUser()" nz-button nzType="primary">
+      Chỉnh sửa
+    </button>
+  </div>
+</form>

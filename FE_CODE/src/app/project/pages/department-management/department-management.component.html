@@ -1,0 +1,53 @@
+<div class="p-6">
+  <p class="text-xl font-semibold mb-4">Quản lý phòng ban</p>
+  <form [formGroup]="form" class="grid grid-cols-5 gap-x-8">
+    <div class="mb-4">
+      <p class="mb-2">ID</p>
+      <input formControlName="id" nz-input type="number" placeholder="Id người dùng" />
+    </div>
+    <div class="mb-4">
+      <p class="mb-2">Tên phòng ban</p>
+      <input formControlName="name" nz-input type="text" placeholder="Tên phòng ban" />
+    </div>
+    <div class="mb-4">
+      <p class="mb-2">Quản lý</p>
+      <nz-select class="w-full" formControlName="manager_id" nzShowSearch nzAllowClear nzPlaceHolder="Quản lý">
+        <nz-option *ngFor="let item of users" [nzLabel]="item.fullName" [nzValue]="item.id"></nz-option>
+      </nz-select>
+    </div>
+    <div class="mb-4">
+      <p class="mb-2">Ngày tạo</p>
+      <nz-date-picker formControlName="createdAt" nzPlaceHolder="Ngày tạo" class="w-full"></nz-date-picker>
+    </div>
+    <div class="flex items-center mt-[10px]">
+      <button (click)="cancel()" nz-button class="mr-4">Hủy</button>
+      <button (click)="search()" nz-button nzType="primary">Tìm kiếm</button>
+    </div>
+  </form>
+  <div class="float-right mb-6">
+    <button (click)="exportExcel()"  class="mr-4" nz-button>Xuất excel</button>
+    <button (click)="openEditModal()" nz-button>Thêm mới phòng ban</button>
+  </div>
+  <app-sort-table [colTitle]="listOfColumn" [loaded]="true" [data]="listOfData" [total]="totalCount"
+    [pageSize]="form.get('pageSize')?.value!" [pageIndex]="form.get('page')?.value!"
+    (pageIndexChange)="changePage($event)" (pageSizeChange)="changePageSize($event)">
+    <ng-template #rows let-row let-index="index">
+      <td class="truncate">{{ row.id }}</td>
+      <td class="truncate">{{ row.name }}</td>
+      <td class="truncate">{{ getMemberName(row.manager_id) }}</td>
+      <td class="truncate">{{ row.memberQuantity }}</td>
+      <td class="truncate">{{ row.createdAt | date:'yyyy-MM-dd' }}</td>
+      <td class="truncate">{{ row.updatedAt | date:'yyyy-MM-dd' }}</td>
+      <td class="flex items-center">
+        <span (click)="openEditModal(row.id)" nz-icon nzType="edit" nzTheme="outline"
+          class="text-lg mr-2 cursor-pointer hover:text-blue-500"></span>
+        <i (click)="openMemberAddModal(row.id)"
+          class="fa-solid fa-wrench text-base mr-2 cursor-pointer hover:text-blue-500"></i>
+        <a nz-popconfirm nzPopconfirmTitle="Bạn có chắc chắn xóa phòng ban này?" nzPopconfirmPlacement="bottom"
+          (nzOnConfirm)="deleteDepartment(row.id)">
+          <i class="fa-solid fa-trash text-base mr-2 cursor-pointer hover:text-red-500"></i>
+        </a>
+      </td>
+    </ng-template>
+  </app-sort-table>
+</div>

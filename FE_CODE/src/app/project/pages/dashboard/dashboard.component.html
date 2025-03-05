@@ -1,0 +1,76 @@
+<div class="p-[40px]">
+  <p class="text-[#0EAF8F] font-medium text-[18px] !mb-[30px]">TỔNG QUAN</p>
+  <div class="flex items-center mx-[-30px]">
+    <div *ngFor="let box of listBox"
+      class="relative w-1/5 border-[1px] border-[#D8D8D8] rounded-[8px] py-[16px] mb-[50px] mx-[30px]">
+      <div class="text-custom !mx-auto !left-0 !right-0 !w-fit">{{ box.title }}</div>
+      <p class="text-center text-[#505050] text-[40px] font-black !mt-[15px] !mb-[13px]">{{ box.count }}</p>
+      <!-- <p class="text-center !mb-[0px] font-semibold" [ngClass]="{
+        'text-[#0EAF8F]': box.status === 1,
+        'text-[#CF002A]': box.status === 0
+      }">{{ box.percent }}%
+        <i *ngIf="box.status === 1" class="fa-solid fa-arrow-trend-up"></i>
+        <i *ngIf="box.status === 0" class="fa-solid fa-arrow-trend-down"></i>
+      </p>
+      <p class="text-center text-[11px] font-normal !mb-[0px]">so với tháng trước</p> -->
+      <p class="text-center text-[11px] font-normal !mb-[0px]">công việc</p>
+    </div>
+  </div>
+  <div class="flex justify-between">
+    <div class="relative w-2/5 border-[1px] border-[#D8D8D8] rounded-[8px] px-[36px] flex justify-center items-center">
+      <div class="text-custom">Tỉ lệ hoàn thành công việc</div>
+      <div class="w-[82%]">
+        <canvas id="pieChart"></canvas>
+      </div>
+    </div>
+    <div
+      class="relative w-3/5 border-[1px] border-[#D8D8D8] rounded-[8px] px-[36px] flex justify-center items-center ml-[25px]">
+      <div class="text-custom">Số lượng công việc (tuần)</div>
+      <div class="w-[82%]">
+        <canvas id="lineChart"></canvas>
+      </div>
+    </div>
+  </div>
+  <!-- <p class="text-[#0EAF8F] font-medium text-[18px] !mb-[30px] !mt-[48px]">DANH SÁCH CÔNG VIỆC</p>
+  <div class="table">
+    <table>
+      <thead>
+        <tr class="table-header text-left">
+          <th>
+            STT
+          </th>
+          <th>Tên công việc</th>
+          <th>Ngày bắt</th>
+          <th>Lần ban hành</th>
+          <th>Điều khoản</th>
+          <th>Soạn thảo</th>
+          <th>Thời gian</th>
+        </tr>
+      </thead>
+      <tbody>
+        <div class="table-body-row">
+          <tr class="table-row text-left">
+            <td>1</td>
+            <td>Quy định bảo mật thông tin</td>
+            <td>QD_03_01_01</td>
+            <td>02</td>
+            <td>7.5</td>
+            <td>Phòng QA</td>
+            <td>12/04/2021</td>
+          </tr>
+        </div>
+        <div class="table-body-row">
+          <tr class="table-row text-left">
+            <td>2</td>
+            <td>Quy định bảo mật thông tin</td>
+            <td>QD_03_01_01</td>
+            <td>02</td>
+            <td>7.5</td>
+            <td>Phòng QA</td>
+            <td>12/04/2021</td>
+          </tr>
+        </div>
+      </tbody>
+    </table>
+  </div>
+</div> -->

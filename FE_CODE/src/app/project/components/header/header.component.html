@@ -1,0 +1,61 @@
+<div>
+  <div class="bg-white shadow-md w-full flex flex-row justify-between items-center">
+    <div></div>
+    <div class="w-max flex flex-row items-center h-full">
+      <div class="p-3 cursor-pointer relative mr-3" nzPlacement="bottomRight" nz-dropdown [nzDropdownMenu]="menu1">
+        <i class="fa-solid fa-bell text-[22px] text-primary"></i>
+        <span *ngIf="totalCountNoti > 0"
+          class="text-[9px] bg-red-600 rounded-full px-[6px] text-white absolute top-[4px] right-[5px]">{{totalCountNoti}}</span>
+      </div>
+
+      <div *ngIf="authQuery.user$ | async as user" class="w-max flex flex-row items-center h-full pr-3 mr-5 cursor-pointer py-4" nz-dropdown
+        [nzDropdownMenu]="menu" nzTrigger="click">
+        <nz-dropdown-menu #menu="nzDropdownMenu">
+          <ul nz-menu>
+            <li [routerLink]="'/main/profile'" nz-menu-item
+              class="flex px-4 py-2 font-medium border-l-[3px] border-solid hover:border-[#005EBF] border-white">Trang
+              cá nhân</li>
+            <li *ngIf="user.role === 'user'" [routerLink]="'/main/my-works'" nz-menu-item
+              class="flex px-4 py-2 font-medium border-l-[3px] border-solid hover:border-[#005EBF] border-white">Công
+              việc của tôi</li>
+            <li (click)="logOut()" nz-menu-item
+              class="flex px-4 py-2 font-medium border-l-[3px] border-solid hover:border-[#005EBF] border-white">Đăng
+              xuất</li>
+          </ul>
+        </nz-dropdown-menu>
+        <span *ngIf="authQuery.user$ | async as user" class="text-[#0071AF] flex items-center">
+          <j-avatar class="flex"
+            [avatarUrl]="user.avatarUrl ?? 'https://img.freepik.com/premium-photo/incredible-h…-as-symmetrical-flat-icon-design_978521-11722.jpg'"
+            [size]="26">
+          </j-avatar>
+          <span class="ml-2">{{user.fullName}}</span>
+          <i class="fa-solid fa-angle-down ml-[10px]"></i>
+        </span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<nz-dropdown-menu #menu1="nzDropdownMenu">
+  <ul nz-menu nzSelectable class="!p-3 w-[400px] h-[400px] overflow-y-auto">
+    <p class="font-semibold text-[#0071AF] text-center !mb-1">THÔNG BÁO</p>
+    <div *ngIf="listNoti && listNoti.length > 0">
+      <div *ngFor="let item of listNoti" class="rounded-[4px] border-[1px] border-[#f5f5f5] p-3 !mb-2"
+        [ngClass]="(item.seen === false) ? 'bg-[#e7f6ff]' : ''">
+        <p class="text-[13px] !mb-[5px]">{{item?.message}}</p>
+        <!-- <p class="text-[#969696] text-[11px]">Lúc {{item?.createdDate | date :'hh:mm'}} ngày {{item?.createdDate | date
+          :'dd-MM-yyyy'}}</p> -->
+        <p class="text-[#0071AF] underline cursor-pointer text-[13px]">Xem
+          chi tiết</p>
+      </div>
+    </div>
+    <div *ngIf="listNoti?.length === 0">
+      <div class="mt-[150px]">
+        <div class="flex justify-center">
+          <i class="fa-regular fa-bell !text-xl"></i>
+        </div>
+        <p class="text-center">Hiện tại chưa có thông báo</p>
+      </div>
+    </div>
+  </ul>
+</nz-dropdown-menu>

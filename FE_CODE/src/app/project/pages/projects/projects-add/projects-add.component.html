@@ -1,0 +1,42 @@
+<form [formGroup]="form" class="p-6">
+  <p *ngIf="!modifyId" class="mb-5 text-lg font-semibold">Thêm mới dự án</p>
+  <p *ngIf="modifyId" class="mb-5 text-lg font-semibold">Chỉnh sửa dự án</p>
+
+  <div class="my-2">
+    <p class="mb-1">Tên dự án</p>
+    <input formControlName="name" nz-input placeholder="Tên dự án" />
+  </div>
+  <div class="my-2">
+    <p class="mb-1">Mô tả dự án</p>
+    <input formControlName="description" nz-input placeholder="Mô tả dự án" />
+  </div>
+  <div class="my-2">
+    <p class="mb-1">Thời gian dự án</p>
+    <div>
+      <nz-date-picker formControlName="start_date" nzPlaceHolder="Ngày bắt đầu" class="mr-8"></nz-date-picker>
+      <nz-date-picker formControlName="end_date"></nz-date-picker>
+    </div>
+  </div>
+  <div class="my-2">
+    <p class="mb-1">Quản lý phụ trách</p>
+    <nz-select class="w-full" formControlName="manager_id" [nzCustomTemplate]="assigneesSelectedTmpl"
+      [nzNotFoundContent]="noUserFoundTmpl" nzNoAnimation>
+      <nz-option nzCustomContent *ngFor="let user of users" [nzValue]="user.id" [nzLabel]="user.fullName">
+        <j-user [user]="user"></j-user>
+      </nz-option>
+    </nz-select>
+  </div>
+
+  <div class="mt-6 flex justify-end">
+    <button (click)="handleCancel()" nz-button class="mr-3">Hủy</button>
+    <button *ngIf="!modifyId" (click)="addProject()" nz-button nzType="primary">Thêm mới</button>
+    <button *ngIf="modifyId" (click)="updateProject()" nz-button nzType="primary">Chỉnh sửa</button>
+  </div>
+</form>
+
+<ng-template #noUserFoundTmpl>
+  No user found.
+</ng-template>
+<ng-template #assigneesSelectedTmpl let-selected>
+  <j-user [user]="getUser()"></j-user>
+</ng-template>

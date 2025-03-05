@@ -1,0 +1,33 @@
+<div [style.width.px]="sidebarWidth" class="sidebar">
+  <div class="sidebar-content">
+    <div class="flex px-1 py-6">
+      <j-avatar avatarUrl="https://cdn-icons-png.flaticon.com/512/8133/8133826.png" [name]="'Project'" [rounded]="false"
+        [size]="45" title="Angular Vietnam">
+      </j-avatar>
+      <div class="pl-2">
+        <div class="font-medium text-textDark text-15">
+          <!-- {{ project.name }} -->
+          Daily
+        </div>
+        <div class="text-textMedium text-13">
+          <!-- {{ project.category }} Project -->
+          Sortware Project
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="authQuery.user$ | async as user">
+      <div *ngFor="let link of sideBarLinks; let idx = index">
+        <a *ngIf="link.url && checkUserCanAccessRoute(link.url, user.role!)" [routerLink]="link.url"
+          routerLinkActive="active" class="link allowed">
+
+          <svg-icon class="mr-4" [name]="link.icon" [size]="24">
+          </svg-icon>
+
+          <div class="pt-px text-15">{{ link.name }}</div>
+        </a>
+        <div *ngIf="idx === 1" class="divider"></div>
+      </div>
+    </div>
+  </div>
+</div>

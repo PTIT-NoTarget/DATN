@@ -1,0 +1,25 @@
+<form [formGroup]="form" class="p-6 pb-12">
+  <p *ngIf="mode === 0" class="text-xl font-semibold mb-4">
+    Thêm mới thông báo
+  </p>
+  <p *ngIf="mode === 1" class="text-xl font-semibold mb-4">
+    Xem thông báo
+  </p>
+
+  <div class="mb-4">
+    <textarea rows="6" nz-input formControlName="message"></textarea>
+  </div>
+  <div class="float-right">
+    <button (click)="close()" nz-button class="mr-3">Hủy</button>
+    <button *ngIf="mode === 0" [disabled]="isLoading" (click)="addNoti()" nz-button nzType="primary">
+      Gửi thông báo
+    </button>
+  </div>
+</form>
+
+<ng-template #noUserFoundTmpl>
+  No user found.
+</ng-template>
+<ng-template #assigneesSelectedTmpl let-selected>
+  <j-user [user]="getUser()"></j-user>
+</ng-template>
