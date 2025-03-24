@@ -13,17 +13,6 @@ module.exports = function (app) {
     next();
   });
 
-  //user registration
-  app.post(
-    "/api/v1/signup",
-    [verifyUser.checkExistingUsername],
-    [verifyUser.checkExistingEmail],
-    userServices.signup
-  );
-
-  //user login
-  app.post("/api/v1/signin", userServices.signin);
-
   //get all user
   app.post(apiUrl + "/getAll", userServices.getAllUsers);
 
