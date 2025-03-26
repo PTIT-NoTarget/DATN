@@ -42,6 +42,7 @@ describe("Auth Service - signin", () => {
   it("should return 404 if user is not found", async () => {
     // Prepare
     db.user.findOne.mockReturnValue(Promise.resolve(null));
+  
 
     // Execute
     await authService.signin(req, res);
