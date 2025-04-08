@@ -4,7 +4,15 @@
   "description": "Simple CRUD projects using node js and postgres with jwt auth",
   "main": "server.js",
   "scripts": {
-    "test": "jest"
+    "dev": "NODE_ENV=development nodemon server.js",
+    "prod": "NODE_ENV=production node server.js",
+    "test": "NODE_ENV=test npx jest",
+    "test:auth": "NODE_ENV=test npx jest BE_CODE/test/services/auth-service.test.js",
+    "test:project": "NODE_ENV=test npx jest BE_CODE/test/services/project-services.test.js",
+    "test:user": "NODE_ENV=test npx jest BE_CODE/test/services/user-service.test.js",
+    "test:department": "NODE_ENV=test npx jest BE_CODE/test/services/department-services.test.js",
+    "test:watch": "NODE_ENV=test npx jest --watch",
+    "test:coverage": "NODE_ENV=test npx jest --coverage"
   },
   "keywords": [
     "nodejs",
@@ -21,6 +29,7 @@
     "bcryptjs": "^2.4.3",
     "body-parser": "^1.19.0",
     "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
     "express": "^4.17.1",
     "express-validator": "^7.2.0",
     "jsonwebtoken": "^8.5.1",

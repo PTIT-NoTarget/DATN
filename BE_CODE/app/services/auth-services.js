@@ -5,29 +5,39 @@ const { status } = require("express/lib/response");
 const database = require("../models");
 const User = database.user;
 
-exports.signup = (req, res) => {
-  validateRequest(req);
-
-  User.create({
-    username: req.body.username,
-    email: req.body.email,
-    password: bcrypt.hashSync(req.body.password, 8),
-    fullName: req.body.fullName,
-    sex: req.body.sex,
-    dob: req.body.dob,
-    phoneNumber: req.body.phoneNumber,
-    address: req.body.address,
-    position: req.body.position,
-    avatarUrl: req.body.avatarUrl,
-    role: req.body.role,
-    position_1: req.body.position_1,
-    position_level: req.body.position_level,
-    start_date: req.body.start_date,
-  })
-    .then(res.send({ message: "User successfully registered" }))
-    .catch((exception) => {
-      res.status(500).send({ message: exception.message });
+function validateRequest(req) {
+  if (!req.body) {
+    status(400).send({
+      message: "Request can't be empty!",
     });
+  }
+}
+
+exports.signup = async (req, res) => {
+  try {
+    validateRequest(req);
+
+    await User.create({
+      username: req.body.username,
+      email: req.body.email,
+      password: bcrypt.hashSync(req.body.password, 8),
+      fullName: req.body.fullName,
+      sex: req.body.sex,
+      dob: req.body.dob,
+      phoneNumber: req.body.phoneNumber,
+      address: req.body.address,
+      position: req.body.position,
+      avatarUrl: req.body.avatarUrl,
+      role: req.body.role,
+      position_1: req.body.position_1,
+      position_level: req.body.position_level,
+      start_date: req.body.start_date,
+    });
+
+    return res.send({ message: "User successfully registered" });
+  } catch (error) {
+    return res.status(500).send({ message: error.message });
+  }
 };
 
 exports.signin = async (req, res) => {

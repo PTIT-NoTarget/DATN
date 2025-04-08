@@ -1,4 +1,4 @@
-const configuration = require("../config/config-db.js");
+const configuration = require("../config/db.config.js");
 const Sequelize = require("sequelize");
 
 const sequelize = new Sequelize(
@@ -14,6 +14,7 @@ const sequelize = new Sequelize(
       acquire: configuration.pool.acquire,
       idle: configuration.pool.idle,
     },
+    logging: configuration.logging,
   }
 );
 
