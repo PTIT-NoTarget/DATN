@@ -55,11 +55,15 @@ exports.addAProject = async (req, res) => {
   };
 
   await Project.create(body)
-    .then(res.send({ message: "Project successfully registered" }))
+    .then(() => {
+      res.send({ message: "Project successfully registered" });
+    })
     .catch((exception) => {
+      console.error("❌ Failed to create project:", exception); 
       res.status(500).send({ message: exception.message });
     });
 };
+
 
 exports.getProjectById = async (req, res) => {
   try {
