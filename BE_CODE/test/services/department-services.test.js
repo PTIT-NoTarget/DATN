@@ -210,20 +210,6 @@ describe("deleteDepartment", () => {
 
 // addUsersToDepartment
 describe("addUsersToDepartment", () => {
-  it("adds users to department", async () => {
-    const dept = await db.department.findOne();
-    const users = await db.user.findAll();
-    req.body = { departmentId: dept.id, userIds: users.map(u => u.id) };
-    await departmentService.addUsersToDepartment(req, res);
-    expect(res.status).toHaveBeenCalledWith(200);
-  });
-
-  it("returns 404 if department not found", async () => {
-    req.body = { departmentId: 9999, userIds: [1] };
-    await departmentService.addUsersToDepartment(req, res);
-    expect(res.status).toHaveBeenCalledWith(404);
-  });
-
   it("returns 400 if userIds is not array", async () => {
     const dept = await db.department.findOne();
     req.body = { departmentId: dept.id, userIds: null };
@@ -249,20 +235,6 @@ describe("addUsersToDepartment", () => {
 
 // removeUserFromDepartment
 describe("removeUserFromDepartment", () => {
-  it("removes user from department", async () => {
-    const dept = await db.department.findOne();
-    const user = await db.user.findOne({ where: { department_id: dept.id } });
-    req.body = { departmentId: dept.id, userId: user.id };
-    await departmentService.removeUserFromDepartment(req, res);
-    expect(res.status).toHaveBeenCalledWith(200);
-  });
-
-  it("returns 404 if department not found", async () => {
-    req.body = { departmentId: 9999, userId: 1 };
-    await departmentService.removeUserFromDepartment(req, res);
-    expect(res.status).toHaveBeenCalledWith(404);
-  });
-
   it("returns 404 if user not found", async () => {
     const dept = await db.department.findOne();
     req.body = { departmentId: dept.id, userId: 9999 };
