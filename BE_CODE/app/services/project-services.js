@@ -1,7 +1,7 @@
 const database = require("../models/index.js");
 const Project = database.project;
 const ProjectUser = database.project_user;
-const User = database.user;
+const User = database.user; 
 
 exports.getAllProjects = async (req, res) => {
   try {

@@ -4,7 +4,7 @@ const User = database.user;
 const Task = database.task;
 const io = require("../services/socket-instance").getIO();
 const Notification = database.notification;
-const { Op } = require('sequelize');
+const { Op } = require("sequelize");
 
 exports.getAllTasks = async (req, res) => {
   try {
@@ -119,7 +119,7 @@ exports.addATask = async (req, res) => {
       assigned_by: req.body.assigned_by,
       created_by: req.body.created_by,
       story_point: req.body.story_point,
-      follower_ids: JSON.stringify(req.body.follower_ids)
+      follower_ids: JSON.stringify(req.body.follower_ids),
     };
 
     await Task.create(body);
@@ -217,7 +217,7 @@ exports.updateATask = async (req, res) => {
       created_by: task.dataValues.created_by,
       story_point: req.body.story_point,
       user_update: req.body.user_update, // userId update task
-      follower_ids: JSON.stringify(req.body.follower_ids)
+      follower_ids: JSON.stringify(req.body.follower_ids),
     };
 
     // Lấy thông tin user
