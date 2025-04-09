@@ -1,8 +1,9 @@
 const authService = require("../../app/services/auth-services");
-const db = require("../../app/models/index");
+const db = require("../../app/models");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const helper = require("../helper.test");
+const configuration = require("../../app/config/config-jwt");
 
 jest.mock("bcryptjs");
 jest.mock("jsonwebtoken");
@@ -83,9 +84,79 @@ describe("Auth Service", () => {
         message: error.message,
       });
     });
+    it("should validate empty request body", async () => {
+      // Prepare
+      req.body = null;
+
+      // Execute
+      await authService.signup(req, res);
+
+      // Assert
+      expect(res.status).toHaveBeenCalledWith(400);
+      expect(res.send).toHaveBeenCalledWith({
+        message: "Request can't be empty!",
+      });
+    });
+
+    it("should check for duplicate username", async () => {
+      // Prepare
+      await helper.createTestData(); // Creates a user with username "johndoe"
+
+      // Execute
+      await authService.signup(req, res);
+
+      // Assert
+      expect(res.status).toHaveBeenCalledWith(400);
+      expect(res.send).toHaveBeenCalledWith({
+        message: "Username already exists",
+      });
+    });
   });
 
   describe("signin", () => {
+    it("should validate token expiration time", async () => {
+      // Prepare
+      await helper.createTestData();
+      bcrypt.compareSync.mockReturnValue(true);
+
+      // Execute
+      await authService.signin(req, res);
+
+      // Assert
+      expect(jwt.sign).toHaveBeenCalledWith(
+        expect.any(Object),
+        configuration.secret,
+        { expiresIn: 600 }
+      );
+    });
+
+    it("should return user data without password in response", async () => {
+      // Prepare
+      const testUser = {
+        id: 1,
+        username: "johndoe",
+        email: "john@example.com",
+        password: "hashedPassword",
+      };
+      await helper.createTestData();
+      bcrypt.compareSync.mockReturnValue(true);
+      jwt.sign.mockReturnValue("fake-token");
+
+      // Execute
+      await authService.signin(req, res);
+
+      // Assert
+      expect(res.send).toHaveBeenCalledWith({
+        id: testUser.id,
+        username: testUser.username,
+        email: testUser.email,
+        accessToken: "fake-token",
+      });
+      expect(res.send).not.toHaveBeenCalledWith(
+        expect.objectContaining({ password: expect.any(String) })
+      );
+    });
+
     it("should return 400 if username/password missing", async () => {
       // Prepare
       req.body = {};

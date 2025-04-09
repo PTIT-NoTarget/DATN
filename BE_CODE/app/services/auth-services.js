@@ -5,18 +5,21 @@ const { status } = require("express/lib/response");
 const database = require("../models");
 const User = database.user;
 
-function validateRequest(req) {
+exports.signup = async (req, res) => {
   if (!req.body) {
-    status(400).send({
+    return res.status(400).send({
       message: "Request can't be empty!",
     });
   }
-}
-
-exports.signup = async (req, res) => {
+  const existingUser = await User.findOne({
+    where: { username: req.body.username },
+  });
+  if (existingUser) {
+    return res.status(400).send({
+      message: "Username already exists",
+    });
+  }
   try {
-    validateRequest(req);
-
     await User.create({
       username: req.body.username,
       email: req.body.email,
@@ -73,7 +76,6 @@ exports.signin = async (req, res) => {
       accessToken: token,
     });
   } catch (err) {
-    console.error("Signin error:", err);
     return res.status(500).send({ message: err.message });
   }
 };
