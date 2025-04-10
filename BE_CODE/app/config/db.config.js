@@ -2,6 +2,7 @@ require("dotenv").config({
   path: `.env.${process.env.NODE_ENV}`,
 });
 
+
 module.exports = {
   HOST: process.env.DB_HOST,
   USER: process.env.DB_USERNAME,
