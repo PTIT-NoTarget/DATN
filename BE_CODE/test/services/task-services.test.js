@@ -8,7 +8,6 @@ jest.mock("../../app/services/socket-instance", () => ({
   }),
 }));
 
-
 let req, res;
 
 beforeEach(async () => {
@@ -29,41 +28,99 @@ afterEach(async () => {
 
 describe("Task Services", () => {
   describe("getAllTasks", () => {
-    it("should return paginated tasks", async () => {
-      req.body = { page: 1, pageSize: 2 };
+    it("should return paginated tasks with no filter", async () => {
+      req.body = {};
       await taskService.getAllTasks(req, res);
 
       const result = res.json.mock.calls[0][0];
-      expect(result.totalItems).toBeGreaterThan(0);
-      expect(result.issues.length).toBeLessThanOrEqual(2);
+      expect(result.page).toBe(1);
+      expect(result.pageSize).toBe(10);
+      expect(Array.isArray(result.issues)).toBe(true);
     });
 
-    it("should filter tasks by project ID", async () => {
+    it("should filter by project_id", async () => {
       const task = await db.task.findOne();
       req.body = { project_id: task.project_id };
 
       await taskService.getAllTasks(req, res);
-      const data = res.json.mock.calls[0][0];
-      expect(data.issues.every(t => t.projectId === task.project_id)).toBe(true);
+      const issues = res.json.mock.calls[0][0].issues;
+      expect(issues.every((t) => t.projectId === task.project_id)).toBe(true);
     });
 
-    it("should filter tasks by name", async () => {
-      req.body = { name: "API" };
+    it("should filter by assigned_by", async () => {
+      const task = await db.task.findOne();
+      req.body = { assigned_by: task.assigned_by };
 
       await taskService.getAllTasks(req, res);
-      const data = res.json.mock.calls[0][0];
-      expect(data.issues.every(t => t.title.includes("API"))).toBe(true);
+      const issues = res.json.mock.calls[0][0].issues;
+      expect(issues.every((t) => t.reporterId === task.assigned_by)).toBe(true);
+    });
+
+    it("should filter by status", async () => {
+      const task = await db.task.findOne();
+      req.body = { status: task.status };
+
+      await taskService.getAllTasks(req, res);
+      const issues = res.json.mock.calls[0][0].issues;
+      expect(issues.every((t) => t.status === task.status)).toBe(true);
+    });
+
+    it("should filter by name keyword", async () => {
+      const task = await db.task.findOne();
+      req.body = { name: task.name.slice(0, 3) }; // từ khóa đầu
+
+      await taskService.getAllTasks(req, res);
+      const issues = res.json.mock.calls[0][0].issues;
+      expect(issues.some((t) => t.title.includes(req.body.name))).toBe(true);
+    });
+
+    it("should filter by createdAt date", async () => {
+      const task = await db.task.findOne();
+      const createdAt = task.createdAt.toISOString().split("T")[0];
+
+      req.body = { createdAt };
+      await taskService.getAllTasks(req, res);
+
+      const issues = res.json.mock.calls[0][0].issues;
+      expect(issues.length).toBeGreaterThan(0);
+    });
+
+    it("should return specific task by ID", async () => {
+      const task = await db.task.findOne();
+      req.body = { id: task.id };
+
+      await taskService.getAllTasks(req, res);
+      const issues = res.json.mock.calls[0][0].issues;
+
+      expect(issues.length).toBe(1);
+      expect(issues[0].id).toBe(task.id);
     });
 
     it("should return empty if no match", async () => {
-      req.body = { name: "non-existent-task" };
+      req.body = { name: "no-task-should-match-this" };
+
       await taskService.getAllTasks(req, res);
       expect(res.json.mock.calls[0][0].issues.length).toBe(0);
+    });
+
+    it("should return 500 if DB throws error", async () => {
+      const spy = jest
+        .spyOn(db.task, "findAndCountAll")
+        .mockImplementation(() => {
+          throw new Error("Simulated DB error");
+        });
+
+      await taskService.getAllTasks(req, res);
+
+      expect(res.status).toHaveBeenCalledWith(500);
+      expect(res.json).toHaveBeenCalledWith({ error: "Internal Server Error" });
+
+      spy.mockRestore();
     });
   });
 
   describe("addATask", () => {
-    it("should create a task with valid input", async () => {
+    it("should create a task, save to DB, create notification", async () => {
       const project = await db.project.findOne();
       const user = await db.user.findOne();
 
@@ -83,12 +140,27 @@ describe("Task Services", () => {
 
       await taskService.addATask(req, res);
       expect(res.status).toHaveBeenCalledWith(200);
+
+      //  Check task saved to DB
+      const savedTask = await db.task.findOne({ where: { name: "New Task" } });
+      expect(savedTask).toBeTruthy();
+      expect(savedTask.description).toBe("Test task");
+
+      //  Check notification created (avoid sequelize stringContaining error)
+      const allNotifications = await db.notification.findAll();
+      const hasNotification = allNotifications.some((n) =>
+        n.message.includes("vừa tạo mới công việc")
+      );
+      expect(hasNotification).toBe(true);
     });
 
     it("should fail if project_id is missing", async () => {
       req.body = { name: "Test" };
       await taskService.addATask(req, res);
       expect(res.status).toHaveBeenCalledWith(400);
+      expect(res.json).toHaveBeenCalledWith({
+        message: "project_id is required",
+      });
     });
 
     it("should fail if project does not exist", async () => {
@@ -99,6 +171,7 @@ describe("Task Services", () => {
       };
       await taskService.addATask(req, res);
       expect(res.status).toHaveBeenCalledWith(404);
+      expect(res.json).toHaveBeenCalledWith({ message: "Project not found" });
     });
 
     it("should fail if created_by is missing", async () => {
@@ -109,6 +182,38 @@ describe("Task Services", () => {
       };
       await taskService.addATask(req, res);
       expect(res.status).toHaveBeenCalledWith(400);
+      expect(res.json).toHaveBeenCalledWith({
+        message: "created_by is required",
+      });
+    });
+
+    it("should return 500 if task creation fails", async () => {
+      const project = await db.project.findOne();
+      const user = await db.user.findOne();
+
+      const spy = jest.spyOn(db.task, "create").mockImplementation(() => {
+        throw new Error("Simulated error");
+      });
+
+      req.body = {
+        project_id: project.id,
+        name: "Fail Task",
+        description: "Should fail",
+        label: "bug",
+        status: "todo",
+        start_date: "2025-01-01",
+        end_date: "2025-01-15",
+        assigned_by: user.id,
+        created_by: user.id,
+        story_point: 3,
+        follower_ids: [user.id],
+      };
+
+      await taskService.addATask(req, res);
+      expect(res.status).toHaveBeenCalledWith(500);
+      expect(res.json).toHaveBeenCalledWith({ error: "Internal Server Error" });
+
+      spy.mockRestore();
     });
   });
 
@@ -118,13 +223,31 @@ describe("Task Services", () => {
       req.params = { id: task.id };
 
       await taskService.getATaskById(req, res);
-      expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ id: task.id }));
+      expect(res.json).toHaveBeenCalledWith(
+        expect.objectContaining({ id: task.id })
+      );
     });
 
     it("should return 404 for invalid ID", async () => {
       req.params = { id: 9999 };
       await taskService.getATaskById(req, res);
       expect(res.status).toHaveBeenCalledWith(404);
+    });
+
+    it("should return 500 if exception occurs", async () => {
+      const spy = jest.spyOn(db.task, "findByPk").mockImplementation(() => {
+        throw new Error("Simulated error");
+      });
+
+      req.params = { id: 1 };
+      await taskService.getATaskById(req, res);
+
+      expect(res.status).toHaveBeenCalledWith(500);
+      expect(res.json).toHaveBeenCalledWith({
+        message: "Internal server error",
+      });
+
+      spy.mockRestore();
     });
   });
 
@@ -165,6 +288,35 @@ describe("Task Services", () => {
       await taskService.updateATask(req, res);
       expect(res.status).toHaveBeenCalledWith(404);
     });
+
+    it("should return 500 if update throws an exception", async () => {
+      const task = await db.task.findOne();
+      const user = await db.user.findOne();
+
+      const spy = jest.spyOn(db.task, "findByPk").mockImplementation(() => {
+        throw new Error("Simulated DB failure");
+      });
+
+      req.body = {
+        id: task.id,
+        name: "Should Fail",
+        label: "error",
+        status: "bug",
+        description: "Force error",
+        assigned_by: task.assigned_by,
+        start_date: task.start_date,
+        end_date: task.end_date,
+        story_point: 3,
+        follower_ids: [user.id],
+        user_update: user.id,
+      };
+
+      await taskService.updateATask(req, res);
+      expect(res.status).toHaveBeenCalledWith(500);
+      expect(res.json).toHaveBeenCalledWith({ error: "Internal Server Error" });
+
+      spy.mockRestore();
+    });
   });
 
   describe("deleteATask", () => {
@@ -189,6 +341,20 @@ describe("Task Services", () => {
       req.body = { id: 99999 };
       await taskService.deleteATask(req, res);
       expect(res.status).toHaveBeenCalledWith(404);
+    });
+
+    it("should return 500 if Task.findByPk throws an error", async () => {
+      const spy = jest.spyOn(db.task, "findByPk").mockImplementation(() => {
+        throw new Error("Simulated DB error");
+      });
+
+      req.body = { id: 1 };
+      await taskService.deleteATask(req, res);
+
+      expect(res.status).toHaveBeenCalledWith(500);
+      expect(res.json).toHaveBeenCalledWith({ error: "Internal Server Error" });
+
+      spy.mockRestore();
     });
   });
 });

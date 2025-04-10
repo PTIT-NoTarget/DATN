@@ -23,30 +23,30 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">83.54% </span>
+                <span class="strong">98.73% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>66/79</span>
+                <span class='fraction'>78/79</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">78.57% </span>
+                <span class="strong">96.42% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>22/28</span>
+                <span class='fraction'>27/28</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">88.88% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>8/9</span>
+                <span class='fraction'>9/9</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">83.54% </span>
+                <span class="strong">98.73% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>66/79</span>
+                <span class='fraction'>78/79</span>
             </div>
         
             
@@ -304,32 +304,20 @@
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -338,8 +326,20 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -538,21 +538,21 @@ const Project = database.project;
 const ProjectUser = database.project_user;
 const User = database.user; 
 &nbsp;
-exports.getAllProjects = <span class="fstat-no" title="function not covered" >as</span>ync (req, res) =&gt; {
-<span class="cstat-no" title="statement not covered" >  try {</span>
-    const page = <span class="cstat-no" title="statement not covered" >parseInt(req.body.page) || 1;</span>
-    const pageSize = <span class="cstat-no" title="statement not covered" >parseInt(req.body.pageSize) || 10;</span>
-    const userId = <span class="cstat-no" title="statement not covered" >req.body.userId;</span>
+exports.getAllProjects = async (req, res) =&gt; {
+  try {
+    const page = parseInt(req.body.page) || 1;
+    const pageSize = parseInt(req.body.pageSize) || 10;
+    const userId = req.body.userId;
 &nbsp;
-    const offset = <span class="cstat-no" title="statement not covered" >(page - 1) * pageSize;</span>
-    const limit = <span class="cstat-no" title="statement not covered" >pageSize;</span>
+    const offset = (page - 1) * pageSize;
+    const limit = pageSize;
 &nbsp;
-    const filterOptions = <span class="cstat-no" title="statement not covered" >{</span>
+    const filterOptions = {
       limit: limit,
       offset: offset,
     };
 &nbsp;
-<span class="cstat-no" title="statement not covered" >    if (userId) {</span>
+    <span class="missing-if-branch" title="if path not taken" >I</span>if (userId) {
 <span class="cstat-no" title="statement not covered" >      filterOptions.include = [</span>
         {
           model: User,
@@ -563,9 +563,9 @@ exports.getAllProjects = <span class="fstat-no" title="function not covered" >as
       ];
     }
 &nbsp;
-    const projects = <span class="cstat-no" title="statement not covered" >await Project.findAndCountAll(filterOptions);</span>
+    const projects = await Project.findAndCountAll(filterOptions);
 &nbsp;
-<span class="cstat-no" title="statement not covered" >    res.json({</span>
+    res.json({
       totalItems: projects.count,
       totalPages: Math.ceil(projects.count / pageSize),
       page: page,
@@ -573,8 +573,8 @@ exports.getAllProjects = <span class="fstat-no" title="function not covered" >as
       projects: projects.rows,
     });
   } catch (error) {
-<span class="cstat-no" title="statement not covered" >    console.error("Error creating project:", error);</span>
-<span class="cstat-no" title="statement not covered" >    res.status(500).json({ error: "Internal Server Error" });</span>
+    console.error("Error creating project:", error);
+    res.status(500).json({ error: "Internal Server Error" });
   }
 };
 &nbsp;
@@ -775,7 +775,7 @@ exports.removeUserFromProject = async (req, res) =&gt; {
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-04-10T12:14:49.518Z
+                at 2025-04-10T15:29:33.325Z
             </div>
         <script src="../prettify.js"></script>
         <script>
