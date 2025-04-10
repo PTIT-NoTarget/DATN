@@ -12,6 +12,7 @@
     "test:user": "cross-env NODE_ENV=test npx jest BE_CODE/test/services/user-service.test.js",
     "test:department": "cross-env NODE_ENV=test npx jest BE_CODE/test/services/department-services.test.js",
     "test:notification": "cross-env NODE_ENV=test npx jest BE_CODE/test/services/notification-services.test.js",
+    "test:task": "cross-env NODE_ENV=test npx jest BE_CODE/test/services/task-services.test.js",
     "test:watch": "cross-env NODE_ENV=test npx jest --watch",
     "test:coverage": "cross-env NODE_ENV=test npx jest --coverage"
   },

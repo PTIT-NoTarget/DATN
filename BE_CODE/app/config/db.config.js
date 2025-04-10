@@ -1,6 +1,7 @@
 require("dotenv").config({
   path: `.env.${process.env.NODE_ENV}`,
 });
+//require("dotenv").config({ path: ".env.test" });
 
 module.exports = {
   HOST: process.env.DB_HOST,
