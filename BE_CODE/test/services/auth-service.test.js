@@ -42,7 +42,7 @@ describe("Auth Service", () => {
   });
 
   describe("signup", () => {
-    it("should create new user successfully and save to database", async () => {
+    it("AUTH1: should create new user successfully and save to database", async () => {
       // Prepare
       bcrypt.hashSync.mockReturnValue("hashedPassword");
       const expectedUser = {
@@ -70,7 +70,7 @@ describe("Auth Service", () => {
       expect(savedUser.fullName).toBe(expectedUser.fullName);
     });
 
-    it("should return 500 if database error occurs", async () => {
+    it("AUTH2: should return 500 if database error occurs", async () => {
       // Prepare
       const error = new Error("Database error");
       jest.spyOn(db.user, "create").mockRejectedValue(error);
@@ -84,7 +84,7 @@ describe("Auth Service", () => {
         message: error.message,
       });
     });
-    it("should validate empty request body", async () => {
+    it("AUTH3: should validate empty request body", async () => {
       // Prepare
       req.body = null;
 
@@ -98,7 +98,7 @@ describe("Auth Service", () => {
       });
     });
 
-    it("should check for duplicate username", async () => {
+    it("AUTH4: should check for duplicate username", async () => {
       // Prepare
       await helper.createTestData(); // Creates a user with username "johndoe"
 
@@ -114,7 +114,7 @@ describe("Auth Service", () => {
   });
 
   describe("signin", () => {
-    it("should validate token expiration time", async () => {
+    it("AUTH5: should validate token expiration time", async () => {
       // Prepare
       await helper.createTestData();
       bcrypt.compareSync.mockReturnValue(true);
@@ -130,7 +130,7 @@ describe("Auth Service", () => {
       );
     });
 
-    it("should return user data without password in response", async () => {
+    it("AUTH6: should return user data without password in response", async () => {
       // Prepare
       const testUser = {
         id: 1,
@@ -157,7 +157,7 @@ describe("Auth Service", () => {
       );
     });
 
-    it("should return 400 if username/password missing", async () => {
+    it("AUTH7: should return 400 if username/password missing", async () => {
       // Prepare
       req.body = {};
 
@@ -171,7 +171,7 @@ describe("Auth Service", () => {
       });
     });
 
-    it("should return 404 if user not found", async () => {
+    it("AUTH8: should return 404 if user not found", async () => {
       // Execute
       await authService.signin(req, res);
 
@@ -182,7 +182,7 @@ describe("Auth Service", () => {
       });
     });
 
-    it("should return 401 if password invalid", async () => {
+    it("AUTH9: should return 401 if password invalid", async () => {
       // Prepare
       await helper.createTestData();
       bcrypt.compareSync.mockReturnValue(false);
@@ -197,7 +197,7 @@ describe("Auth Service", () => {
       });
     });
 
-    it("should return 200 and token if credentials valid", async () => {
+    it("AUTH10: should return 200 and token if credentials valid", async () => {
       // Prepare
       const user = {
         id: 1,

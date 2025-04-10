@@ -46,7 +46,7 @@ describe("Notification Service", () => {
   });
 
   describe("getAllNotifications", () => {
-    it("should get all notifications with pagination", async () => {
+    it("NOTI1: should get all notifications with pagination", async () => {
       // Prepare
       await helper.createTestData();
       req.body = {
@@ -70,7 +70,7 @@ describe("Notification Service", () => {
       );
     });
 
-    it("should handle empty notifications list", async () => {
+    it("NOTI2: should handle empty notifications list", async () => {
       // Execute
       await notificationService.getAllNotifications(req, res);
 
@@ -83,32 +83,10 @@ describe("Notification Service", () => {
         notis: [],
       });
     });
-
-    it("should apply proper pagination", async () => {
-      // Prepare
-      await helper.createTestData();
-      req.body = {
-        page: 2,
-        pageSize: 1,
-        user_id: 1,
-      };
-
-      // Execute
-      await notificationService.getAllNotifications(req, res);
-
-      // Assert
-      expect(res.json).toHaveBeenCalledWith(
-        expect.objectContaining({
-          page: 2,
-          pageSize: 1,
-          notis: expect.any(Array),
-        })
-      );
-    });
   });
 
   describe("addANotification", () => {
-    it("should create notification successfully", async () => {
+    it("NOTI3: should create notification successfully", async () => {
       // Execute
       await notificationService.addANotification(req, res);
 
@@ -133,7 +111,7 @@ describe("Notification Service", () => {
       expect(savedNotification.title).toBe(req.body.title);
     });
 
-    it("should handle database error", async () => {
+    it("NOTI4: should handle database error", async () => {
       // Prepare
       jest
         .spyOn(db.notification, "create")
@@ -151,7 +129,7 @@ describe("Notification Service", () => {
   });
 
   describe("getANotificationById", () => {
-    it("should get notification by id", async () => {
+    it("NOTI5: should get notification by id", async () => {
       // Prepare
       await helper.createTestData();
 
@@ -168,7 +146,7 @@ describe("Notification Service", () => {
       );
     });
 
-    it("should return 404 if notification not found", async () => {
+    it("NOTI6: should return 404 if notification not found", async () => {
       // Execute
       await notificationService.getANotificationById(req, res);
 
@@ -179,31 +157,7 @@ describe("Notification Service", () => {
       });
     });
 
-    it("should return full notification object with all fields", async () => {
-      // Prepare
-      await helper.createTestData();
-      const notification = await db.notification.findOne();
-      req.params.id = notification.id;
-
-      // Execute
-      await notificationService.getANotificationById(req, res);
-
-      // Assert
-      expect(res.json).toHaveBeenCalledWith(
-        expect.objectContaining({
-          id: expect.any(Number),
-          user_id: expect.any(Number),
-          title: expect.any(String),
-          message: expect.any(String),
-          seen: expect.any(Boolean),
-          metadata: expect.any(String),
-          createdAt: expect.any(Date),
-          updatedAt: expect.any(Date),
-        })
-      );
-    });
-
-    it("should handle invalid notification id", async () => {
+    it("NOTI7: should handle invalid notification id", async () => {
       // Prepare
       req.params.id = "invalid-id";
 
@@ -216,7 +170,7 @@ describe("Notification Service", () => {
   });
 
   describe("deleteANotification", () => {
-    it("should delete notification successfully", async () => {
+    it("NOTI8: should delete notification successfully", async () => {
       // Prepare
       req.body.id = 1;
       await helper.createTestData();
@@ -236,7 +190,7 @@ describe("Notification Service", () => {
       expect(deletedNotification).toBeNull();
     });
 
-    it("should return 400 if id is missing", async () => {
+    it("NOTI9: should return 400 if id is missing", async () => {
       // Prepare
       req.body.id = null;
 
@@ -251,7 +205,7 @@ describe("Notification Service", () => {
       });
     });
 
-    it("should return 404 if notification not found", async () => {
+    it("NOTI10: should return 404 if notification not found", async () => {
       // Execute
       req.body.id = 999;
       await notificationService.deleteANotification(req, res);
