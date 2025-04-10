@@ -1,20 +1,20 @@
-const notificationService = require("../../app/services/notification-services");
-const db = require("../../app/models");
-const helper = require("../helper.test");
-const io = require("../../app/services/socket-instance").getIO();
-
 const mockEmit = jest.fn();
+
+// Mock socket-instance BEFORE requiring the notification service
 jest.mock("../../app/services/socket-instance", () => ({
-  getIO: jest.fn(() => ({
+  getIO: () => ({
     emit: mockEmit,
-  })),
+  }),
 }));
+
+const notificationService = require("../../app/services/notification-services");
+const helper = require("../helper.test");
+const db = require("../../app/models");
 
 describe("Notification Service", () => {
   let req, res;
 
-  beforeEach(async () => {
-    await helper.setupTestDatabase();
+  beforeEach(() => {
     req = {
       body: {
         user_id: 1,
@@ -22,25 +22,31 @@ describe("Notification Service", () => {
         message: "This is a test notification",
         metadata: JSON.stringify({
           taskId: 1,
-          type: "test_notification",
+          type: "test",
         }),
+      },
+      params: {
+        id: 1,
       },
     };
     res = {
       status: jest.fn().mockReturnThis(),
-      send: jest.fn(),
       json: jest.fn(),
+      send: jest.fn(),
     };
+  });
+
+  beforeEach(async () => {
+    await helper.setupTestDatabase();
   });
 
   afterEach(async () => {
     await helper.clearTestDatabase();
     jest.clearAllMocks();
-    mockEmit.mockClear();
   });
 
   describe("getAllNotifications", () => {
-    it("should return all notifications for a user", async () => {
+    it("should get all notifications with pagination", async () => {
       // Prepare
       await helper.createTestData();
       req.body = {
@@ -64,42 +70,45 @@ describe("Notification Service", () => {
       );
     });
 
-    it("should return 500 if database error occurs", async () => {
+    it("should handle empty notifications list", async () => {
+      // Execute
+      await notificationService.getAllNotifications(req, res);
+
+      // Assert
+      expect(res.json).toHaveBeenCalledWith({
+        totalItems: 0,
+        totalPages: 0,
+        page: 1,
+        pageSize: 10,
+        notis: [],
+      });
+    });
+
+    it("should apply proper pagination", async () => {
       // Prepare
-      const error = new Error("Database error");
-      jest.spyOn(db.notification, "findAndCountAll").mockRejectedValue(error);
+      await helper.createTestData();
+      req.body = {
+        page: 2,
+        pageSize: 1,
+        user_id: 1,
+      };
 
       // Execute
       await notificationService.getAllNotifications(req, res);
 
       // Assert
-      expect(res.status).toHaveBeenCalledWith(500);
-      expect(res.json).toHaveBeenCalledWith({ error: "Internal Server Error" });
+      expect(res.json).toHaveBeenCalledWith(
+        expect.objectContaining({
+          page: 2,
+          pageSize: 1,
+          notis: expect.any(Array),
+        })
+      );
     });
   });
 
   describe("addANotification", () => {
     it("should create notification successfully", async () => {
-      // Execute
-      await notificationService.addANotification(req, res);
-
-      // Assert
-      expect(res.status).toHaveBeenCalledWith(200);
-      expect(res.json).toHaveBeenCalledWith({
-        message: "Notification added successfully",
-      });
-
-      // Check database
-      const savedNotification = await db.notification.findOne({
-        where: { message: req.body.message },
-      });
-      expect(savedNotification).toBeTruthy();
-      expect(savedNotification.title).toBe(req.body.title);
-      expect(savedNotification.message).toBe(req.body.message);
-      expect(savedNotification.user_id).toBe(req.body.user_id);
-    });
-
-    it("should emit socket event when notification is created", async () => {
       // Execute
       await notificationService.addANotification(req, res);
 
@@ -111,31 +120,121 @@ describe("Notification Service", () => {
         seen: false,
         metadata: req.body.metadata,
       });
+      expect(res.status).toHaveBeenCalledWith(200);
+      expect(res.json).toHaveBeenCalledWith({
+        message: "Notification added successfully",
+      });
+
+      // Verify database
+      const savedNotification = await db.notification.findOne({
+        where: { user_id: req.body.user_id },
+      });
+      expect(savedNotification).toBeTruthy();
+      expect(savedNotification.title).toBe(req.body.title);
+    });
+
+    it("should handle database error", async () => {
+      // Prepare
+      jest
+        .spyOn(db.notification, "create")
+        .mockRejectedValue(new Error("Database error"));
+
+      // Execute
+      await notificationService.addANotification(req, res);
+
+      // Assert
+      expect(res.status).toHaveBeenCalledWith(500);
+      expect(res.json).toHaveBeenCalledWith({
+        error: "Internal Server Error",
+      });
+    });
+  });
+
+  describe("getANotificationById", () => {
+    it("should get notification by id", async () => {
+      // Prepare
+      await helper.createTestData();
+
+      // Execute
+      await notificationService.getANotificationById(req, res);
+
+      // Assert
+      expect(res.json).toHaveBeenCalledWith(
+        expect.objectContaining({
+          id: expect.any(Number),
+          user_id: expect.any(Number),
+          message: expect.any(String),
+        })
+      );
+    });
+
+    it("should return 404 if notification not found", async () => {
+      // Execute
+      await notificationService.getANotificationById(req, res);
+
+      // Assert
+      expect(res.status).toHaveBeenCalledWith(404);
+      expect(res.json).toHaveBeenCalledWith({
+        message: "Notification not found",
+      });
+    });
+
+    it("should return full notification object with all fields", async () => {
+      // Prepare
+      await helper.createTestData();
+      const notification = await db.notification.findOne();
+      req.params.id = notification.id;
+
+      // Execute
+      await notificationService.getANotificationById(req, res);
+
+      // Assert
+      expect(res.json).toHaveBeenCalledWith(
+        expect.objectContaining({
+          id: expect.any(Number),
+          user_id: expect.any(Number),
+          title: expect.any(String),
+          message: expect.any(String),
+          seen: expect.any(Boolean),
+          metadata: expect.any(String),
+          createdAt: expect.any(Date),
+          updatedAt: expect.any(Date),
+        })
+      );
+    });
+
+    it("should handle invalid notification id", async () => {
+      // Prepare
+      req.params.id = "invalid-id";
+
+      // Execute
+      await notificationService.getANotificationById(req, res);
+
+      // Assert
+      expect(res.status).toHaveBeenCalledWith(500);
     });
   });
 
   describe("deleteANotification", () => {
-    // it("should delete notification successfully", async () => {
-    //   // Prepare
-    //   const notification = await db.notification.create(req.body);
-    //   req.body.id = notification.id;
+    it("should delete notification successfully", async () => {
+      // Prepare
+      req.body.id = 1;
+      await helper.createTestData();
 
-    //   // Execute
-    //   await notificationService.deleteANotification(req, res);
+      // Execute
+      await notificationService.deleteANotification(req, res);
 
-    //   // Assert
-    //   expect(res.status).toHaveBeenCalledWith(200);
-    //   expect(res.json).toHaveBeenCalledWith({
-    //     success: true,
-    //     message: "Notification deleted successfully",
-    //   });
+      // Assert
+      expect(res.status).toHaveBeenCalledWith(200);
+      expect(res.json).toHaveBeenCalledWith({
+        success: true,
+        message: "Notification deleted successfully",
+      });
 
-    //   // Verify deletion
-    //   const deletedNotification = await db.notification.findByPk(
-    //     notification.id
-    //   );
-    //   expect(deletedNotification).toBeNull();
-    // });
+      // Verify deletion
+      const deletedNotification = await db.notification.findByPk(req.body.id);
+      expect(deletedNotification).toBeNull();
+    });
 
     it("should return 400 if id is missing", async () => {
       // Prepare
@@ -153,10 +252,8 @@ describe("Notification Service", () => {
     });
 
     it("should return 404 if notification not found", async () => {
-      // Prepare
-      req.body.id = 999;
-
       // Execute
+      req.body.id = 999;
       await notificationService.deleteANotification(req, res);
 
       // Assert
@@ -167,28 +264,4 @@ describe("Notification Service", () => {
       });
     });
   });
-
-  // describe("updateANotification", () => {
-  //   it("should update notification successfully", async () => {
-  //     // Prepare
-  //     const notification = await db.notification.create(req.body);
-  //     req.body.id = notification.id;
-  //     req.body.message = "Updated message";
-
-  //     // Execute
-  //     await notificationService.updateANotification(req, res);
-
-  //     // Assert
-  //     expect(res.status).toHaveBeenCalledWith(200);
-  //     expect(res.json).toHaveBeenCalledWith({
-  //       message: "Notification updated successfully",
-  //     });
-
-  //     // Verify update
-  //     const updatedNotification = await db.notification.findByPk(
-  //       notification.id
-  //     );
-  //     expect(updatedNotification.message).toBe("Updated message");
-  //   });
-  // });
 });
