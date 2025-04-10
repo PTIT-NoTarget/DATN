@@ -13,7 +13,7 @@
     "test:department": "NODE_ENV=test npx jest BE_CODE/test/services/department-services.test.js",
     "test:task": "cross-env NODE_ENV=test npx jest BE_CODE/test/services/task-services.test.js",
     "test:watch": "NODE_ENV=test npx jest --watch",
-    "test:coverage": "NODE_ENV=test npx jest --coverage"
+    "test:coverage": "cross-env NODE_ENV=test npx jest --coverage"
   },
   "keywords": [
     "nodejs",
