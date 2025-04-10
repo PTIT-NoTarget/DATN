@@ -36,7 +36,65 @@ const createTestDepartments = async () => {
   ]);
   return departments;
 };
+const createMoreUsers = async (departments) => {
+  const users = await database.user.bulkCreate([
+    {
+      username: "johndoe",
+      email: "john@example.com",
+      password: bcrypt.hashSync("password123", 8),
+      fullName: "John Doe",
+      sex: "0", // Nam
+      dob: "1990-01-01",
+      phoneNumber: "0123456789",
+      address: "123 Street",
+      position: "MANAGER",
+      position_1: "DEV",
+      position_level: "SENIOR",
+      role: "admin",
+      department_id: departments[0].id,
+      start_date: "2020-01-01",
+    },
+    {
+      username: "janesmith",
+      email: "jane@example.com",
+      password: bcrypt.hashSync("password123", 8),
+      fullName: "Jane Smith",
+      sex: "1", // Nữ
+      dob: "1992-02-02",
+      phoneNumber: "0987654321",
+      address: "456 Avenue",
+      position: "STAFF",
+      position_1: "TESTER",
+      position_level: "JUNIOR",
+      role: "user",
+      department_id: departments[1].id,
+      start_date: "2021-01-01",
+    },
+    {
+      username: "bobwilson",
+      email: "bob@example.com",
+      password: bcrypt.hashSync("password123", 8),
+      fullName: "Bob Wilson",
+      sex: "0",
+      dob: "1988-03-03",
+      phoneNumber: "0123498765",
+      address: "789 Road",
+      position: "STAFF",
+      position_1: "BA",
+      position_level: "MIDDLE",
+      role: "user",
+      department_id: departments[2].id,
+      start_date: "2022-01-01",
+    },
+  ]);
 
+  // Update manager_id cho departments
+  await departments[0].update({ manager_id: users[0].id });
+  await departments[1].update({ manager_id: users[1].id });
+  await departments[2].update({ manager_id: users[2].id });
+
+  return users;
+};
 // Tạo user mẫu
 const createTestUsers = async (departments) => {
   const users = await database.user.bulkCreate([
