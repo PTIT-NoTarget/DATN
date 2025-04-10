@@ -1,445 +1,194 @@
 const taskService = require("../../app/services/task-services");
-const db = require("../../app/models/index");
 const helper = require("../helper.test");
-const Task = db.task;
-const { Op } = require("sequelize"); // Đảm bảo rằng Sequelize Op được import
+const db = helper.database;
 
-// Mock `getIO` từ `socket-instance.js` để tránh lỗi Socket.io
-jest.mock("../../app/services/socket-instance.js", () => ({
-  getIO: jest.fn().mockReturnValue({
-    to: jest.fn().mockReturnThis(),
+jest.mock("../../app/services/socket-instance", () => ({
+  getIO: () => ({
     emit: jest.fn(),
   }),
 }));
 
-describe("Task Service", () => {
-  let req, res;
 
-  beforeEach(() => {
-    // Giả lập request và response
-    req = {
-      body: {
-        project_id: 1,
-        name: "New Task",
-        description: "This is a test task",
-        label: "technical",
-        status: "todo",
-        priority: "high",
-        start_date: "2024-01-01",
-        end_date: "2024-01-10",
-        assigned_by: 1,
-        created_by: 1,
-        story_point: 5,
-        follower_ids: [1],
-      },
-    };
+let req, res;
 
-    res = {
-      status: jest.fn().mockReturnThis(), // Mock method `status`
-      json: jest.fn(), // Mock method `json`
-    };
-  });
+beforeEach(async () => {
+  await helper.setupTestDatabase();
+  await helper.createTestData();
 
-  afterEach(() => {
-    jest.clearAllMocks(); // Clear mocks after each test
+  req = {};
+  res = {
+    status: jest.fn().mockReturnThis(),
+    json: jest.fn(),
+  };
+});
+
+afterEach(async () => {
+  await helper.clearTestDatabase();
+  jest.clearAllMocks();
+});
+
+describe("Task Services", () => {
+  describe("getAllTasks", () => {
+    it("should return paginated tasks", async () => {
+      req.body = { page: 1, pageSize: 2 };
+      await taskService.getAllTasks(req, res);
+
+      const result = res.json.mock.calls[0][0];
+      expect(result.totalItems).toBeGreaterThan(0);
+      expect(result.issues.length).toBeLessThanOrEqual(2);
+    });
+
+    it("should filter tasks by project ID", async () => {
+      const task = await db.task.findOne();
+      req.body = { project_id: task.project_id };
+
+      await taskService.getAllTasks(req, res);
+      const data = res.json.mock.calls[0][0];
+      expect(data.issues.every(t => t.projectId === task.project_id)).toBe(true);
+    });
+
+    it("should filter tasks by name", async () => {
+      req.body = { name: "API" };
+
+      await taskService.getAllTasks(req, res);
+      const data = res.json.mock.calls[0][0];
+      expect(data.issues.every(t => t.title.includes("API"))).toBe(true);
+    });
+
+    it("should return empty if no match", async () => {
+      req.body = { name: "non-existent-task" };
+      await taskService.getAllTasks(req, res);
+      expect(res.json.mock.calls[0][0].issues.length).toBe(0);
+    });
   });
 
   describe("addATask", () => {
-    it("should add a new task successfully and save to database", async () => {
-      // Giả lập việc tạo task thành công
-      const expectedTask = {
-        ...req.body,
+    it("should create a task with valid input", async () => {
+      const project = await db.project.findOne();
+      const user = await db.user.findOne();
+
+      req.body = {
+        project_id: project.id,
+        name: "New Task",
+        description: "Test task",
+        label: "dev",
         status: "todo",
-        priority: "high",
-        story_point: 5,
+        start_date: "2025-01-01",
+        end_date: "2025-01-15",
+        assigned_by: user.id,
+        created_by: user.id,
+        story_point: 3,
+        follower_ids: [user.id],
       };
-      jest.spyOn(Task, "create").mockResolvedValue(expectedTask); // Giả lập db tạo task thành công
 
-      // Gọi hàm addATask với các tham số giả lập
       await taskService.addATask(req, res);
-
-      // Kiểm tra xem status có trả về 200 không
       expect(res.status).toHaveBeenCalledWith(200);
-      // Kiểm tra xem json có trả về thông báo thành công không
-      expect(res.json).toHaveBeenCalledWith({
-        message: "Task added successfully",
-      });
     });
 
-    it("should return 500 if database error occurs", async () => {
-      // Giả lập lỗi khi tạo task trong database
-      const error = new Error("Database error");
-      jest.spyOn(Task, "create").mockRejectedValue(error); // Giả lập lỗi từ database
-
-      // Gọi hàm addATask với các tham số giả lập
+    it("should fail if project_id is missing", async () => {
+      req.body = { name: "Test" };
       await taskService.addATask(req, res);
-
-      // Kiểm tra xem status có trả về 500 không
-      expect(res.status).toHaveBeenCalledWith(500);
-      // Kiểm tra xem json có trả về lỗi không
-      expect(res.json).toHaveBeenCalledWith({
-        error: "Internal Server Error",
-      });
-    });
-  });
-
-  describe("getAllTasks", () => {
-    it("should return a list of tasks successfully", async () => {
-      // Giả lập dữ liệu trả về từ database
-      const tasksData = {
-        count: 2,
-        rows: [
-          {
-            id: 1,
-            name: "Task 1",
-            status: "todo",
-            priority: "high",
-            description: "Task 1 description",
-            assigned_by: 1,
-            project_id: 1,
-            start_date: "2024-01-01",
-            end_date: "2024-01-10",
-            created_by: 1,
-            story_point: 5,
-            follower_ids: "[1]",
-            createdAt: new Date(),
-            updatedAt: new Date(),
-          },
-          {
-            id: 2,
-            name: "Task 2",
-            status: "in-progress",
-            priority: "medium",
-            description: "Task 2 description",
-            assigned_by: 2,
-            project_id: 1,
-            start_date: "2024-01-05",
-            end_date: "2024-01-15",
-            created_by: 2,
-            story_point: 3,
-            follower_ids: "[2]",
-            createdAt: new Date(),
-            updatedAt: new Date(),
-          },
-        ],
-      };
-
-      // Giả lập findAndCountAll trả về dữ liệu task
-      jest.spyOn(Task, "findAndCountAll").mockResolvedValue(tasksData);
-
-      // Giả lập request với tham số tìm kiếm
-      req = {
-        body: {
-          page: 1,
-          pageSize: 10,
-        },
-      };
-
-      // Gọi hàm getAllTasks với các tham số giả lập
-      await taskService.getAllTasks(req, res);
-
-      // Kiểm tra xem status có trả về 200 không
-      expect(res.status).toHaveBeenCalledWith(200); // Kiểm tra res.status
-      // Kiểm tra xem json có trả về đúng dữ liệu không
-      expect(res.json).toHaveBeenCalledWith({
-        totalItems: 2,
-        totalPages: 1,
-        page: 1,
-        pageSize: 10,
-        issues: expect.arrayContaining([
-          expect.objectContaining({
-            title: "Task 1",
-            status: "todo",
-            priority: "high",
-          }),
-          expect.objectContaining({
-            title: "Task 2",
-            status: "in-progress",
-            priority: "medium",
-          }),
-        ]),
-      });
+      expect(res.status).toHaveBeenCalledWith(400);
     });
 
-    it("should return 500 if database error occurs", async () => {
-      // Giả lập lỗi khi tìm kiếm task trong database
-      const error = new Error("Database error");
-      jest.spyOn(Task, "findAndCountAll").mockRejectedValue(error); // Giả lập lỗi từ database
+    it("should fail if project does not exist", async () => {
+      req.body = {
+        project_id: 99999,
+        name: "Ghost Task",
+        created_by: 1,
+      };
+      await taskService.addATask(req, res);
+      expect(res.status).toHaveBeenCalledWith(404);
+    });
 
-      // Gọi hàm getAllTasks với các tham số giả lập
-      await taskService.getAllTasks(req, res);
-
-      // Kiểm tra xem status có trả về 500 không
-      expect(res.status).toHaveBeenCalledWith(500); // Kiểm tra res.status
-      // Kiểm tra xem json có trả về lỗi không
-      expect(res.json).toHaveBeenCalledWith({
-        error: "Internal Server Error",
-      });
+    it("should fail if created_by is missing", async () => {
+      const project = await db.project.findOne();
+      req.body = {
+        project_id: project.id,
+        name: "Missing Creator",
+      };
+      await taskService.addATask(req, res);
+      expect(res.status).toHaveBeenCalledWith(400);
     });
   });
 
   describe("getATaskById", () => {
-    it("should return a task by ID successfully", async () => {
-      // Giả lập dữ liệu trả về từ database
-      const taskData = {
-        id: 1,
-        name: "Task 1",
-        status: "todo",
-        priority: "high",
-        description: "Task 1 description",
-        assigned_by: 1,
-        project_id: 1,
-        start_date: "2024-01-01",
-        end_date: "2024-01-10",
-        created_by: 1,
-        story_point: 5,
-        follower_ids: "[1]",
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      };
+    it("should return a task by valid ID", async () => {
+      const task = await db.task.findOne();
+      req.params = { id: task.id };
 
-      // Giả lập findOne trả về task theo ID
-      jest.spyOn(Task, "findOne").mockResolvedValue(taskData);
-
-      // Giả lập request với tham số tìm kiếm
-      req = {
-        params: {
-          id: 1,
-        },
-      };
-
-      // Gọi hàm getATaskById với các tham số giả lập
       await taskService.getATaskById(req, res);
-
-      // Kiểm tra xem status có trả về 200 không
-      expect(res.status).toHaveBeenCalledWith(200); // Kiểm tra res.status
-      // Kiểm tra xem json có trả về đúng dữ liệu không
-      expect(res.json).toHaveBeenCalledWith({
-        task: expect.objectContaining({
-          id: 1,
-          name: "Task 1",
-          status: "todo",
-          priority: "high",
-        }),
-      });
+      expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ id: task.id }));
     });
 
-    it("should return 404 if task is not found", async () => {
-      // Giả lập findOne trả về null nếu không tìm thấy task
-      jest.spyOn(Task, "findOne").mockResolvedValue(null);
-
-      // Giả lập request với tham số tìm kiếm
-      req = {
-        params: {
-          id: 999, // ID không tồn tại
-        },
-      };
-
-      // Gọi hàm getATaskById với các tham số giả lập
+    it("should return 404 for invalid ID", async () => {
+      req.params = { id: 9999 };
       await taskService.getATaskById(req, res);
-
-      // Kiểm tra xem status có trả về 404 không
       expect(res.status).toHaveBeenCalledWith(404);
-      // Kiểm tra xem json có trả về thông báo lỗi không
-      expect(res.json).toHaveBeenCalledWith({
-        error: "Task not found",
-      });
-    });
-
-    it("should return 500 if database error occurs", async () => {
-      // Giả lập lỗi khi tìm task trong database
-      const error = new Error("Database error");
-      jest.spyOn(Task, "findOne").mockRejectedValue(error);
-
-      // Giả lập request với tham số tìm kiếm
-      req = {
-        params: {
-          id: 1,
-        },
-      };
-
-      // Gọi hàm getATaskById với các tham số giả lập
-      await taskService.getATaskById(req, res);
-
-      // Kiểm tra xem status có trả về 500 không
-      expect(res.status).toHaveBeenCalledWith(500);
-      // Kiểm tra xem json có trả về lỗi không
-      expect(res.json).toHaveBeenCalledWith({
-        error: "Internal Server Error",
-      });
     });
   });
 
   describe("updateATask", () => {
-    it("should update a task successfully", async () => {
-      const updatedTask = {
-        id: 1,
+    it("should update a task with valid input", async () => {
+      const task = await db.task.findOne();
+      const user = await db.user.findOne();
+
+      req.body = {
+        id: task.id,
         name: "Updated Task",
-        status: "in-progress",
-        priority: "medium",
-        description: "Updated task description",
-        assigned_by: 1,
-        project_id: 1,
-        start_date: "2024-01-01",
-        end_date: "2024-01-10",
-        created_by: 1,
-        story_point: 5,
-        follower_ids: "[1]",
-        createdAt: new Date(),
-        updatedAt: new Date(),
+        label: "design",
+        status: "done",
+        description: "Updated desc",
+        assigned_by: task.assigned_by,
+        start_date: task.start_date,
+        end_date: task.end_date,
+        story_point: 10,
+        follower_ids: [user.id],
+        user_update: user.id,
       };
 
-      // Giả lập cập nhật task thành công
-      jest.spyOn(Task, "update").mockResolvedValue([1]); // Return array with 1 to indicate 1 row updated
-
-      // Giả lập request với tham số cập nhật
-      req = {
-        params: {
-          id: 1,
-        },
-        body: {
-          name: "Updated Task",
-          status: "in-progress",
-          priority: "medium",
-          description: "Updated task description",
-        },
-      };
-
-      // Gọi hàm updateATask với các tham số giả lập
       await taskService.updateATask(req, res);
-
-      // Kiểm tra xem status có trả về 200 không
       expect(res.status).toHaveBeenCalledWith(200);
-      // Kiểm tra xem json có trả về thông báo thành công không
-      expect(res.json).toHaveBeenCalledWith({
-        message: "Task updated successfully",
-      });
+
+      const updated = await db.task.findByPk(task.id);
+      expect(updated.name).toBe("Updated Task");
     });
 
-    it("should return 404 if task is not found", async () => {
-      // Giả lập không tìm thấy task để cập nhật
-      jest.spyOn(Task, "update").mockResolvedValue([0]); // Return [0] to simulate no rows updated
-
-      // Giả lập request với tham số cập nhật
-      req = {
-        params: {
-          id: 999, // ID không tồn tại
-        },
-        body: {
-          name: "Updated Task",
-          status: "in-progress",
-          priority: "medium",
-          description: "Updated task description",
-        },
-      };
-
-      // Gọi hàm updateATask với các tham số giả lập
+    it("should return 400 if ID is missing", async () => {
+      req.body = {};
       await taskService.updateATask(req, res);
+      expect(res.status).toHaveBeenCalledWith(400);
+    });
 
-      // Kiểm tra xem status có trả về 404 không
+    it("should return 404 if task not found", async () => {
+      req.body = { id: 9999 };
+      await taskService.updateATask(req, res);
       expect(res.status).toHaveBeenCalledWith(404);
-      // Kiểm tra xem json có trả về lỗi không
-      expect(res.json).toHaveBeenCalledWith({
-        error: "Task not found",
-      });
-    });
-
-    it("should return 500 if database error occurs", async () => {
-      // Giả lập lỗi khi cập nhật task trong database
-      const error = new Error("Database error");
-      jest.spyOn(Task, "update").mockRejectedValue(error);
-
-      // Giả lập request với tham số cập nhật
-      req = {
-        params: {
-          id: 1,
-        },
-        body: {
-          name: "Updated Task",
-          status: "in-progress",
-          priority: "medium",
-          description: "Updated task description",
-        },
-      };
-
-      // Gọi hàm updateATask với các tham số giả lập
-      await taskService.updateATask(req, res);
-
-      // Kiểm tra xem status có trả về 500 không
-      expect(res.status).toHaveBeenCalledWith(500);
-      // Kiểm tra xem json có trả về lỗi không
-      expect(res.json).toHaveBeenCalledWith({
-        error: "Internal Server Error",
-      });
     });
   });
 
   describe("deleteATask", () => {
-    it("should delete a task successfully", async () => {
-      // Giả lập việc xóa task thành công
-      jest.spyOn(Task, "destroy").mockResolvedValue(1); // Giả lập xóa task thành công
+    it("should delete a task with valid ID", async () => {
+      const task = await db.task.findOne();
+      req.body = { id: task.id };
 
-      // Giả lập request với tham số id
-      req = {
-        params: {
-          id: 1,
-        },
-      };
-
-      // Gọi hàm deleteATask với các tham số giả lập
       await taskService.deleteATask(req, res);
-
-      // Kiểm tra xem status có trả về 200 không
       expect(res.status).toHaveBeenCalledWith(200);
-      // Kiểm tra xem json có trả về thông báo thành công không
-      expect(res.json).toHaveBeenCalledWith({
-        message: "Task deleted successfully",
-      });
+
+      const deleted = await db.task.findByPk(task.id);
+      expect(deleted).toBeNull();
     });
 
-    it("should return 404 if task is not found", async () => {
-      // Giả lập không tìm thấy task để xóa
-      jest.spyOn(Task, "destroy").mockResolvedValue(0); // Return 0 to simulate no rows deleted
-
-      // Giả lập request với tham số id
-      req = {
-        params: {
-          id: 999, // ID không tồn tại
-        },
-      };
-
-      // Gọi hàm deleteATask với các tham số giả lập
+    it("should return 400 if ID is missing", async () => {
+      req.body = {};
       await taskService.deleteATask(req, res);
+      expect(res.status).toHaveBeenCalledWith(400);
+    });
 
-      // Kiểm tra xem status có trả về 404 không
+    it("should return 404 if task does not exist", async () => {
+      req.body = { id: 99999 };
+      await taskService.deleteATask(req, res);
       expect(res.status).toHaveBeenCalledWith(404);
-      // Kiểm tra xem json có trả về lỗi không
-      expect(res.json).toHaveBeenCalledWith({
-        error: "Task not found",
-      });
-    });
-
-    it("should return 500 if database error occurs", async () => {
-      // Giả lập lỗi khi xóa task trong database
-      const error = new Error("Database error");
-      jest.spyOn(Task, "destroy").mockRejectedValue(error);
-
-      // Giả lập request với tham số id
-      req = {
-        params: {
-          id: 1,
-        },
-      };
-
-      // Gọi hàm deleteATask với các tham số giả lập
-      await taskService.deleteATask(req, res);
-
-      // Kiểm tra xem status có trả về 500 không
-      expect(res.status).toHaveBeenCalledWith(500);
-      // Kiểm tra xem json có trả về lỗi không
-      expect(res.json).toHaveBeenCalledWith({
-        error: "Internal Server Error",
-      });
     });
   });
 });
