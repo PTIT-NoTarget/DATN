@@ -770,7 +770,7 @@ describe("userService.deleteUser", () => {
     expect(res.status).toHaveBeenCalledWith(500);
     expect(res.json).toHaveBeenCalledWith({
       success: false,
-      message: "Server Error",
+      message: "Error deleting user",
     });
   });
 });
