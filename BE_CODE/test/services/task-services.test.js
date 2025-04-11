@@ -28,7 +28,7 @@ afterEach(async () => {
 
 describe("Task Services", () => {
   describe("getAllTasks", () => {
-    it("should return paginated tasks with no filter", async () => {
+    it("GAT1: should return paginated tasks with no filter", async () => {
       req.body = {};
       await taskService.getAllTasks(req, res);
 
@@ -38,7 +38,7 @@ describe("Task Services", () => {
       expect(Array.isArray(result.issues)).toBe(true);
     });
 
-    it("should filter by project_id", async () => {
+    it("GAT2: should filter by project_id", async () => {
       const task = await db.task.findOne();
       req.body = { project_id: task.project_id };
 
@@ -47,7 +47,7 @@ describe("Task Services", () => {
       expect(issues.every((t) => t.projectId === task.project_id)).toBe(true);
     });
 
-    it("should filter by assigned_by", async () => {
+    it("GAT3: should filter by assigned_by", async () => {
       const task = await db.task.findOne();
       req.body = { assigned_by: task.assigned_by };
 
@@ -56,7 +56,7 @@ describe("Task Services", () => {
       expect(issues.every((t) => t.reporterId === task.assigned_by)).toBe(true);
     });
 
-    it("should filter by status", async () => {
+    it("GAT4: should filter by status", async () => {
       const task = await db.task.findOne();
       req.body = { status: task.status };
 
@@ -65,7 +65,7 @@ describe("Task Services", () => {
       expect(issues.every((t) => t.status === task.status)).toBe(true);
     });
 
-    it("should filter by name keyword", async () => {
+    it("GAT5: should filter by name keyword", async () => {
       const task = await db.task.findOne();
       req.body = { name: task.name.slice(0, 3) }; // từ khóa đầu
 
@@ -74,7 +74,7 @@ describe("Task Services", () => {
       expect(issues.some((t) => t.title.includes(req.body.name))).toBe(true);
     });
 
-    it("should filter by createdAt date", async () => {
+    it("GAT6: should filter by createdAt date", async () => {
       const task = await db.task.findOne();
       const createdAt = task.createdAt.toISOString().split("T")[0];
 
@@ -85,7 +85,7 @@ describe("Task Services", () => {
       expect(issues.length).toBeGreaterThan(0);
     });
 
-    it("should return specific task by ID", async () => {
+    it("GAT7: should return specific task by ID", async () => {
       const task = await db.task.findOne();
       req.body = { id: task.id };
 
@@ -96,14 +96,14 @@ describe("Task Services", () => {
       expect(issues[0].id).toBe(task.id);
     });
 
-    it("should return empty if no match", async () => {
+    it("GAT8: should return empty if no match", async () => {
       req.body = { name: "no-task-should-match-this" };
 
       await taskService.getAllTasks(req, res);
       expect(res.json.mock.calls[0][0].issues.length).toBe(0);
     });
 
-    it("should return 500 if DB throws error", async () => {
+    it("GAT9: should return 500 if DB throws error", async () => {
       const spy = jest
         .spyOn(db.task, "findAndCountAll")
         .mockImplementation(() => {
@@ -120,7 +120,7 @@ describe("Task Services", () => {
   });
 
   describe("addATask", () => {
-    it("should create a task, save to DB, create notification", async () => {
+    it("AAT1: should create a task, save to DB, create notification", async () => {
       const project = await db.project.findOne();
       const user = await db.user.findOne();
 
@@ -154,7 +154,7 @@ describe("Task Services", () => {
       expect(hasNotification).toBe(true);
     });
 
-    it("should fail if project_id is missing", async () => {
+    it("AAT2: should fail if project_id is missing", async () => {
       req.body = { name: "Test" };
       await taskService.addATask(req, res);
       expect(res.status).toHaveBeenCalledWith(400);
@@ -163,7 +163,7 @@ describe("Task Services", () => {
       });
     });
 
-    it("should fail if project does not exist", async () => {
+    it("AAT3: should fail if project does not exist", async () => {
       req.body = {
         project_id: 99999,
         name: "Ghost Task",
@@ -174,7 +174,7 @@ describe("Task Services", () => {
       expect(res.json).toHaveBeenCalledWith({ message: "Project not found" });
     });
 
-    it("should fail if created_by is missing", async () => {
+    it("AAT4: should fail if created_by is missing", async () => {
       const project = await db.project.findOne();
       req.body = {
         project_id: project.id,
@@ -187,7 +187,7 @@ describe("Task Services", () => {
       });
     });
 
-    it("should return 500 if task creation fails", async () => {
+    it("AAT5: should return 500 if task creation fails", async () => {
       const project = await db.project.findOne();
       const user = await db.user.findOne();
 
@@ -218,7 +218,7 @@ describe("Task Services", () => {
   });
 
   describe("getATaskById", () => {
-    it("should return a task by valid ID", async () => {
+    it("GATBI1: should return a task by valid ID", async () => {
       const task = await db.task.findOne();
       req.params = { id: task.id };
 
@@ -228,13 +228,13 @@ describe("Task Services", () => {
       );
     });
 
-    it("should return 404 for invalid ID", async () => {
+    it("GATBI2: should return 404 for invalid ID", async () => {
       req.params = { id: 9999 };
       await taskService.getATaskById(req, res);
       expect(res.status).toHaveBeenCalledWith(404);
     });
 
-    it("should return 500 if exception occurs", async () => {
+    it("GATBI3: should return 500 if exception occurs", async () => {
       const spy = jest.spyOn(db.task, "findByPk").mockImplementation(() => {
         throw new Error("Simulated error");
       });
@@ -252,7 +252,7 @@ describe("Task Services", () => {
   });
 
   describe("updateATask", () => {
-    it("should update a task with valid input", async () => {
+    it("UAT1: should update a task with valid input", async () => {
       const task = await db.task.findOne();
       const user = await db.user.findOne();
 
@@ -277,19 +277,19 @@ describe("Task Services", () => {
       expect(updated.name).toBe("Updated Task");
     });
 
-    it("should return 400 if ID is missing", async () => {
+    it("UAT2: should return 400 if ID is missing", async () => {
       req.body = {};
       await taskService.updateATask(req, res);
       expect(res.status).toHaveBeenCalledWith(400);
     });
 
-    it("should return 404 if task not found", async () => {
+    it("UAT3: should return 404 if task not found", async () => {
       req.body = { id: 9999 };
       await taskService.updateATask(req, res);
       expect(res.status).toHaveBeenCalledWith(404);
     });
 
-    it("should return 500 if update throws an exception", async () => {
+    it("UAT4: should return 500 if update throws an exception", async () => {
       const task = await db.task.findOne();
       const user = await db.user.findOne();
 
@@ -320,7 +320,7 @@ describe("Task Services", () => {
   });
 
   describe("deleteATask", () => {
-    it("should delete a task with valid ID", async () => {
+    it("DAT1: should delete a task with valid ID", async () => {
       const task = await db.task.findOne();
       req.body = { id: task.id };
 
@@ -331,19 +331,19 @@ describe("Task Services", () => {
       expect(deleted).toBeNull();
     });
 
-    it("should return 400 if ID is missing", async () => {
+    it("DAT2: should return 400 if ID is missing", async () => {
       req.body = {};
       await taskService.deleteATask(req, res);
       expect(res.status).toHaveBeenCalledWith(400);
     });
 
-    it("should return 404 if task does not exist", async () => {
+    it("DAT3: should return 404 if task does not exist", async () => {
       req.body = { id: 99999 };
       await taskService.deleteATask(req, res);
       expect(res.status).toHaveBeenCalledWith(404);
     });
 
-    it("should return 500 if Task.findByPk throws an error", async () => {
+    it("DAT4: should return 500 if Task.findByPk throws an error", async () => {
       const spy = jest.spyOn(db.task, "findByPk").mockImplementation(() => {
         throw new Error("Simulated DB error");
       });

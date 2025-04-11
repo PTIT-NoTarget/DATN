@@ -20,9 +20,9 @@ afterEach(async () => {
   jest.clearAllMocks();
 });
 
-describe("Project Controller", () => {
+describe("Project Services", () => {
   describe("getAllProjects", () => {
-    it("should return all projects without userId filter", async () => {
+    it("GAP1: should return all projects without userId filter", async () => {
       req.body = { page: 1, pageSize: 10 };
       await projectService.getAllProjects(req, res);
 
@@ -37,7 +37,7 @@ describe("Project Controller", () => {
       );
     });
 
-    it("should return filtered projects with userId", async () => {
+    it("GAP2: should return filtered projects with userId", async () => {
       const user = await db.user.findOne({ where: { username: "janesmith" } });
       req.body = { page: 1, pageSize: 10, userId: user.id };
 
@@ -47,14 +47,14 @@ describe("Project Controller", () => {
       expect(result.projects.length).toBeGreaterThan(0);
     });
 
-    it("should return empty array for invalid userId", async () => {
+    it("GAP3: should return empty array for invalid userId", async () => {
       req.body = { page: 1, pageSize: 10, userId: 9999 };
 
       await projectService.getAllProjects(req, res);
       expect(res.json.mock.calls[0][0].projects.length).toBe(0);
     });
 
-    it("should return default pagination if page and pageSize are missing", async () => {
+    it("GAP4: should return default pagination if page and pageSize are missing", async () => {
       req.body = {}; // không có page và pageSize
 
       await projectService.getAllProjects(req, res);
@@ -65,7 +65,7 @@ describe("Project Controller", () => {
       expect(Array.isArray(result.projects)).toBe(true);
     });
 
-    it("should return empty result if page number is too high", async () => {
+    it("GAP5: should return empty result if page number is too high", async () => {
       req.body = { page: 999, pageSize: 10 };
 
       await projectService.getAllProjects(req, res);
@@ -75,7 +75,7 @@ describe("Project Controller", () => {
       expect(result.totalItems).toBeGreaterThanOrEqual(0);
     });
 
-    it("should return 500 if database connection error", async () => {
+    it("GAP6: should return 500 if database connection error", async () => {
       const error = new Error("Database error");
       jest.spyOn(db.project, "findAndCountAll").mockRejectedValue(error);
 
@@ -89,7 +89,7 @@ describe("Project Controller", () => {
   });
 
   describe("addAProject", () => {
-    it("should create a project and save to database", async () => {
+    it("AAP1: should create a project and save to database", async () => {
       const manager = await db.user.findOne();
       req.body = {
         name: "Test Project",
@@ -112,7 +112,7 @@ describe("Project Controller", () => {
       expect(project).toBeTruthy();
     });
 
-    it("should return 500 if status is an invalid data type", async () => {
+    it("AAP2: should return 500 if status is an invalid data type", async () => {
       const manager = await db.user.findOne();
       req.body = {
         name: "Invalid Status Project",
@@ -131,7 +131,7 @@ describe("Project Controller", () => {
       );
     });
 
-    it("should create project even if manager_id does not exist (no FK enforced)", async () => {
+    it("AAP3: should create project even if manager_id does not exist (no FK enforced)", async () => {
       req.body = {
         name: "Ghost Manager Project",
         description: "No manager exists",
@@ -156,7 +156,7 @@ describe("Project Controller", () => {
       expect(proj.manager_id).toBe(999999);
     });
 
-    it("should still create project even if end_date is before start_date", async () => {
+    it("AAP4: should still create project even if end_date is before start_date", async () => {
       const manager = await db.user.findOne();
 
       req.body = {
@@ -185,7 +185,7 @@ describe("Project Controller", () => {
   });
 
   describe("getProjectById", () => {
-    it("should return a project by ID", async () => {
+    it("GPBI1: should return a project by ID", async () => {
       const proj = await db.project.findOne();
       req.params = { id: proj.id };
 
@@ -195,14 +195,13 @@ describe("Project Controller", () => {
       );
     });
 
-    it("should return 404 for invalid ID", async () => {
+    it("GPBI2: should return 404 for invalid ID", async () => {
       req.params = { id: 9999 };
       await projectService.getProjectById(req, res);
       expect(res.status).toHaveBeenCalledWith(404);
     });
 
-    it("should return 500 if an error occurs", async () => {
-      // Backup
+    it("GPBI3: should return 500 if an error occurs", async () => {
       const originalFn = db.project.findByPk;
       db.project.findByPk = () => {
         throw new Error("Simulated DB error");
@@ -221,7 +220,7 @@ describe("Project Controller", () => {
       db.project.findByPk = originalFn;
     });
 
-    it("should exclude user password field in result", async () => {
+    it("GPBI4: should exclude user password field in result", async () => {
       const project = await db.project.findOne({
         include: {
           model: db.user,
@@ -241,7 +240,7 @@ describe("Project Controller", () => {
   });
 
   describe("updateProject", () => {
-    it("should update a project successfully", async () => {
+    it("UP1: should update a project successfully", async () => {
       const project = await db.project.findOne();
       req.body = { id: project.id, name: "Updated name" };
 
@@ -251,19 +250,19 @@ describe("Project Controller", () => {
       expect(updated.name).toBe("Updated name");
     });
 
-    it("should return 400 if no ID", async () => {
+    it("UP2: should return 400 if no ID", async () => {
       req.body = {};
       await projectService.updateProject(req, res);
       expect(res.status).toHaveBeenCalledWith(400);
     });
 
-    it("should return 404 if project not found", async () => {
+    it("UP3: should return 404 if project not found", async () => {
       req.body = { id: 9999 };
       await projectService.updateProject(req, res);
       expect(res.status).toHaveBeenCalledWith(404);
     });
 
-    it("should return 500 if an exception occurs during update", async () => {
+    it("UP4: should return 500 if an exception occurs during update", async () => {
       const project = await db.project.findOne();
 
       // Ghi đè tạm thời hàm update để ném lỗi
@@ -293,7 +292,7 @@ describe("Project Controller", () => {
       project.update = originalUpdate;
     });
 
-    it("should update multiple fields of a project", async () => {
+    it("UP5: should update multiple fields of a project", async () => {
       const project = await db.project.findOne();
       req.body = {
         id: project.id,
@@ -313,7 +312,7 @@ describe("Project Controller", () => {
   });
 
   describe("deleteProject", () => {
-    it("should delete a project and related project_user entries", async () => {
+    it("DP1: should delete a project and related project_user entries", async () => {
       const project = await db.project.findOne();
       req.body = { id: project.id };
 
@@ -324,19 +323,19 @@ describe("Project Controller", () => {
       expect(deleted).toBeNull();
     });
 
-    it("should return 400 if no ID", async () => {
+    it("DP2: should return 400 if no ID", async () => {
       req.body = {};
       await projectService.deleteProject(req, res);
       expect(res.status).toHaveBeenCalledWith(400);
     });
 
-    it("should return 404 if project not found", async () => {
+    it("DP3: should return 404 if project not found", async () => {
       req.body = { id: 9999 };
       await projectService.deleteProject(req, res);
       expect(res.status).toHaveBeenCalledWith(404);
     });
 
-    it("should return 500 if project.destroy throws an error", async () => {
+    it("DP4: should return 500 if project.destroy throws an error", async () => {
       const project = await db.project.findOne();
 
       // Ghi đè tạm thời hàm destroy
@@ -365,7 +364,7 @@ describe("Project Controller", () => {
       project.destroy = originalDestroy;
     });
 
-    it("should delete associated project_user records", async () => {
+    it("DP5: should delete associated project_user records", async () => {
       const projectWithUsers = await db.project.findOne({
         include: db.user,
       });
@@ -387,7 +386,7 @@ describe("Project Controller", () => {
   });
 
   describe("addUsersToProject", () => {
-    it("should add users to a project", async () => {
+    it("AUTP1: should add users to a project", async () => {
       const project = await db.project.findOne();
       const users = await db.user.findAll();
       req.body = { projectId: project.id, userIds: [users[2].id] };
@@ -396,7 +395,7 @@ describe("Project Controller", () => {
       expect(res.status).toHaveBeenCalledWith(200);
     });
 
-    it("should return 400 if userIds is empty", async () => {
+    it("AUTP2: should return 400 if userIds is empty", async () => {
       const project = await db.project.findOne();
       req.body = { projectId: project.id, userIds: [] };
 
@@ -404,14 +403,14 @@ describe("Project Controller", () => {
       expect(res.status).toHaveBeenCalledWith(400);
     });
 
-    it("should return 404 if project not found", async () => {
+    it("AUTP3: should return 404 if project not found", async () => {
       req.body = { projectId: 9999, userIds: [1] };
 
       await projectService.addUsersToProject(req, res);
       expect(res.status).toHaveBeenCalledWith(404);
     });
 
-    it("should return 404 if none of the provided userIds exist", async () => {
+    it("AUTP4: should return 404 if none of the provided userIds exist", async () => {
       const project = await db.project.findOne();
       req.body = { projectId: project.id, userIds: [9999, 8888] };
 
@@ -425,7 +424,7 @@ describe("Project Controller", () => {
       });
     });
 
-    it("should return 500 if project.addUsers throws an error", async () => {
+    it("AUTP5: should return 500 if project.addUsers throws an error", async () => {
       const project = await db.project.findOne();
       const users = await db.user.findAll();
 
@@ -458,7 +457,7 @@ describe("Project Controller", () => {
   });
 
   describe("removeUserFromProject", () => {
-    it("should remove a user from a project", async () => {
+    it("RUFP1: should remove a user from a project", async () => {
       const projectUser = await db.project_user.findOne();
       req.body = {
         projectId: projectUser.project_id,
@@ -469,20 +468,20 @@ describe("Project Controller", () => {
       expect(res.status).toHaveBeenCalledWith(200);
     });
 
-    it("should return 404 if project not found", async () => {
+    it("RUFP2: should return 404 if project not found", async () => {
       req.body = { projectId: 9999, userId: 1 };
       await projectService.removeUserFromProject(req, res);
       expect(res.status).toHaveBeenCalledWith(404);
     });
 
-    it("should return 404 if user not found", async () => {
+    it("RUFP3: should return 404 if user not found", async () => {
       const project = await db.project.findOne();
       req.body = { projectId: project.id, userId: 9999 };
       await projectService.removeUserFromProject(req, res);
       expect(res.status).toHaveBeenCalledWith(404);
     });
 
-    it("should return 500 if removeUser throws an error", async () => {
+    it("RUFP4: should return 500 if removeUser throws an error", async () => {
       const projectUser = await db.project_user.findOne();
       const project = await db.project.findByPk(projectUser.project_id);
       const user = await db.user.findByPk(projectUser.user_id);
@@ -514,7 +513,7 @@ describe("Project Controller", () => {
       project.removeUser = originalRemoveUser;
     });
 
-    it("should actually remove the user from project_user table", async () => {
+    it("RUFP5: should actually remove the user from project_user table", async () => {
       const projectUser = await db.project_user.findOne();
       req.body = {
         projectId: projectUser.project_id,
