@@ -2,7 +2,7 @@ const db_name = require("./database");
 const { DataTypes } = require("sequelize");
 
 module.exports = (sequelize, Sequelize) => {
-  const User = sequelize.define(
+  return sequelize.define(
     "user",
     {
       username: {
@@ -63,6 +63,4 @@ module.exports = (sequelize, Sequelize) => {
       tableName: db_name.user,
     }
   );
-
-  return User;
 };

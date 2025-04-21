@@ -102,12 +102,14 @@ exports.updateUser = async (req, res) => {
     }
 
     delete req.body.username;
-    // delete req.body.password;
     delete req.body.email;
     delete req.body.phoneNumber;
 
     if (req.body.password) {
       req.body.password = await bcrypt.hash(req.body.password, 8);
+    }
+    else {
+      req.body.password = user.password;
     }
 
     await user.update(req.body);

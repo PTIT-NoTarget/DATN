@@ -69,14 +69,29 @@ database.user.belongsTo(database.department, {
   onUpdate: "CASCADE",
 });
 
-// Đồng bộ model với cơ sở dữ liệu
-// sequelize
-//   .sync({ alter: true })
-//   .then(() => {
-//     console.log("Database & tables synced!");
-//   })
-//   .catch((error) => {
-//     console.error("Error syncing database:", error);
-//   });
+sequelize.sync().then(() => {
+  return database.user.findOrCreate({
+    where: { username: 'admin' },
+    defaults: {
+      username: "admin",
+      email: "admin@example.com",
+      password: '$2a$12$2C7ZzkR1EfWLzkrPf8UF8eA8l1EXS/.7FAQ0WRCxyE6gKLkjwZPje', // 12345678
+      fullName: "Admin User",
+      sex: "0",
+      dob: "2000-01-01",
+      phoneNumber: "0123456789",
+      address: "Admin Address",
+      avatarUrl: null,
+      role: "admin",
+      position: "MANAGER",
+      position_1: "ADMIN",
+      position_level: "SENIOR",
+      start_date: "2025-01-01",
+      department_id: null,
+    }
+  });
+}).catch(err => {
+  console.error('Lỗi khi tạo user admin:', err);
+});
 
 module.exports = database;

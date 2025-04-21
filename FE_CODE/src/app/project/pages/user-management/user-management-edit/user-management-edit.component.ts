@@ -34,7 +34,7 @@ export class UserManagementEditComponent implements OnInit {
   form = new FormGroup({
     id: new FormControl(),
     username: new FormControl(),
-    password: new FormControl(this.defaultPassword),
+    password: new FormControl(),
     fullName: new FormControl(),
     email: new FormControl(),
     dob: new FormControl(),
@@ -105,7 +105,6 @@ export class UserManagementEditComponent implements OnInit {
   async updateUser() {
     this.form.patchValue({
       id: this.userId,
-      password: null
     });
 
     await this.userService
