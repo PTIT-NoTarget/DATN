@@ -71,6 +71,11 @@ describe("addADepartment", () => {
     req.body = { name: "Design", description: "UI/UX", manager_id: null };
     await departmentService.addADepartment(req, res);
     expect(res.send).toHaveBeenCalledWith({ message: "Department successfully registered" });
+
+    // Kiểm tra DB
+    const savedDept = await db.department.findOne({ where: { name: "Design" } });
+    expect(savedDept).toBeTruthy();
+    expect(savedDept.description).toBe("UI/UX");
   });
 
   it("ADDDEPT2: fails if name missing", async () => {
@@ -83,6 +88,10 @@ describe("addADepartment", () => {
     req.body = { name: "Development", description: "Duplicate test" };
     await departmentService.addADepartment(req, res);
     expect(res.send).toHaveBeenCalled();
+
+    // Kiểm tra xem có ít nhất một bản ghi
+    const depts = await db.department.findAll({ where: { name: "Development" } });
+    expect(depts.length).toBeGreaterThan(0);
   });
 
   it("ADDDEPT4: creates department with manager_id", async () => {
@@ -90,6 +99,11 @@ describe("addADepartment", () => {
     req.body = { name: "NewDept", description: "Test", manager_id: user.id };
     await departmentService.addADepartment(req, res);
     expect(res.send).toHaveBeenCalled();
+
+    // Kiểm tra DB
+    const savedDept = await db.department.findOne({ where: { name: "NewDept" } });
+    expect(savedDept).toBeTruthy();
+    expect(savedDept.manager_id).toBe(user.id);
   });
 
   it("ADDDEPT5: fails when db throws", async () => {
@@ -143,6 +157,10 @@ describe("updateDepartment", () => {
     req.body = { id: department.id, name: "Updated Name" };
     await departmentService.updateDepartment(req, res);
     expect(res.status).toHaveBeenCalledWith(200);
+
+    // Check DB đã update
+    const updated = await db.department.findByPk(department.id);
+    expect(updated.name).toBe("Updated Name");
   });
 
   it("UPDATE2: updates description only", async () => {
@@ -150,6 +168,10 @@ describe("updateDepartment", () => {
     req.body = { id: department.id, description: "New Desc" };
     await departmentService.updateDepartment(req, res);
     expect(res.status).toHaveBeenCalledWith(200);
+
+    // Check DB đã update
+    const updated = await db.department.findByPk(department.id);
+    expect(updated.description).toBe("New Desc");
   });
 
   it("UPDATE3: fails if no ID", async () => {
@@ -180,6 +202,10 @@ describe("deleteDepartment", () => {
     req.body = { id: department.id };
     await departmentService.deleteDepartment(req, res);
     expect(res.status).toHaveBeenCalledWith(200);
+
+    // Kiểm tra thật sự đã bị xóa khỏi DB
+    const deleted = await db.department.findByPk(department.id);
+    expect(deleted).toBeNull();
   });
 
   it("DELETE2: returns 400 if no ID", async () => {
@@ -206,6 +232,10 @@ describe("deleteDepartment", () => {
     req.body = { id: dept.id };
     await departmentService.deleteDepartment(req, res);
     expect(res.status).toHaveBeenCalled();
+
+    // Kiểm tra DB thật sự đã xóa
+    const deleted = await db.department.findByPk(dept.id);
+    expect(deleted).toBeNull();
   });
 });
 
