@@ -12,9 +12,11 @@ import java.util.List;
 
 public class ChangeTaskStatus {
     public static void main(String[] args) throws InterruptedException {
+        // Prepare
         WebDriver driver = Common.init();
         driver.get("http://localhost:4200/main/projects/list");
 
+        // Action
         List<WebElement> projects = driver.findElements(By.cssSelector("projects-list > div > div"));
 
         if (projects.isEmpty()) {
@@ -28,10 +30,45 @@ public class ChangeTaskStatus {
         List<WebElement> backlogTasks = backlog.findElements(By.cssSelector("issue-card"));
 
         WebElement inProgress = boards.get(2);
+        String inProgressTaskName = backlogTasks.getFirst().getText();
         dragAndDrop(driver, backlogTasks.getFirst(), inProgress);
 
         WebElement cancel = boards.get(5);
+        String cancelTaskName = backlogTasks.get(1).getText();
         dragAndDropWithScroll(driver, backlogTasks.get(1), cancel);
+
+        // Assertion
+        System.out.println("First task moved to In Progress: " + inProgressTaskName);
+        System.out.println("Second task moved to Cancel: " + cancelTaskName);
+        Thread.sleep(2000);
+        WebElement inProgressColumn = boards.get(2);
+        List<WebElement> inProgressTasks = inProgressColumn.findElements(By.cssSelector("issue-card"));
+        boolean firstTaskMoved = false;
+        for (WebElement task : inProgressTasks) {
+            if (task.getText().contains(inProgressTaskName)) {
+                firstTaskMoved = true;
+                break;
+            }
+        }
+        System.out.println("First task moved to In Progress: " + firstTaskMoved);
+
+        WebElement cancelColumn = boards.get(5);
+        List<WebElement> cancelTasks = cancelColumn.findElements(By.cssSelector("issue-card"));
+        boolean secondTaskMoved = false;
+        for (WebElement task : cancelTasks) {
+            if (task.getText().contains(cancelTaskName)) {
+                secondTaskMoved = true;
+                break;
+            }
+        }
+        System.out.println("Second task moved to Cancel: " + secondTaskMoved);
+
+        if (firstTaskMoved && secondTaskMoved) {
+            System.out.println("All tasks were moved successfully");
+        } else {
+            System.out.println("Error: Some tasks were not moved correctly");
+        }
+
     }
 
     public static void dragAndDrop(WebDriver driver, WebElement source, WebElement target) throws InterruptedException {

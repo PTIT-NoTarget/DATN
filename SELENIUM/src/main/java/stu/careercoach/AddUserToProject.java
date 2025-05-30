@@ -12,7 +12,8 @@ import java.util.List;
 import java.util.Random;
 
 public class AddUserToProject {
-    public static void main(String[] args) {
+    public static void main(String[] args) throws InterruptedException {
+        // Prepare
         WebDriver driver = Common.init();
         driver.get("http://localhost:4200/main/projects/list");
 
@@ -21,6 +22,8 @@ public class AddUserToProject {
             System.out.println("No projects found");
             return;
         }
+
+        // Action
         WebElement project = projects.getFirst();
         WebElement addUserButton = project.findElement(By.cssSelector("a"));
         addUserButton.click();
@@ -43,5 +46,20 @@ public class AddUserToProject {
         options.getFirst().click();
         WebElement addUserButtonInModal = driver.findElement(By.xpath("//button[span[text()='Thêm thành viên']]"));
         addUserButtonInModal.click();
+
+        Thread.sleep(2000);
+
+        // Assertions
+        WebElement projectsMembersAdd = driver.findElement(By.cssSelector("projects-members-add"));
+        List<WebElement> userNameElements = projectsMembersAdd.findElements(By.cssSelector("span.user-name"));
+
+        boolean userFound = false;
+        for (WebElement member : userNameElements) {
+            if (member.getText().contains("Nguyễn Văn A")) {
+                userFound = true;
+                break;
+            }
+        }
+        System.out.println("User found in members list: " + userFound);
     }
 }
