@@ -70,28 +70,89 @@ database.user.belongsTo(database.department, {
 });
 
 sequelize.sync().then(() => {
-  return database.user.findOrCreate({
-    where: { username: 'admin' },
-    defaults: {
-      username: "admin",
-      email: "admin@example.com",
-      password: '$2a$12$2C7ZzkR1EfWLzkrPf8UF8eA8l1EXS/.7FAQ0WRCxyE6gKLkjwZPje', // 12345678
-      fullName: "Admin User",
-      sex: "0",
-      dob: "2000-01-01",
-      phoneNumber: "0123456789",
-      address: "Admin Address",
-      avatarUrl: null,
-      role: "admin",
-      position: "MANAGER",
-      position_1: "ADMIN",
-      position_level: "SENIOR",
-      start_date: "2025-01-01",
-      department_id: null,
-    }
-  });
+  return Promise.all([
+    database.user.findOrCreate({
+      where: { username: 'admin' },
+      defaults: {
+        username: "admin",
+        email: "admin@example.com",
+        password: '$2a$12$2C7ZzkR1EfWLzkrPf8UF8eA8l1EXS/.7FAQ0WRCxyE6gKLkjwZPje', // 12345678
+        fullName: "Admin User",
+        sex: "0",
+        dob: "2000-01-01",
+        phoneNumber: "0123456789",
+        address: "Admin Address",
+        avatarUrl: null,
+        role: "admin",
+        position: "MANAGER",
+        position_1: "ADMIN",
+        position_level: "SENIOR",
+        start_date: "2025-01-01",
+        department_id: null,
+      }
+    }),
+    database.user.findOrCreate({
+      where: { username: 'user1' },
+      defaults: {
+        username: "user1",
+        email: "user1@example.com",
+        password: '$2a$12$2C7ZzkR1EfWLzkrPf8UF8eA8l1EXS/.7FAQ0WRCxyE6gKLkjwZPje',
+        fullName: "Nguyễn Văn A",
+        sex: "1",
+        dob: "1995-01-01",
+        phoneNumber: "0987654321",
+        address: "Hà Nội",
+        avatarUrl: null,
+        role: "user",
+        position: "STAFF",
+        position_1: "DEVELOPER",
+        position_level: "JUNIOR",
+        start_date: "2024-01-01",
+        department_id: null,
+      }
+    }),
+    database.user.findOrCreate({
+      where: { username: 'user2' },
+      defaults: {
+        username: "user2",
+        email: "user2@example.com",
+        password: '$2a$12$2C7ZzkR1EfWLzkrPf8UF8eA8l1EXS/.7FAQ0WRCxyE6gKLkjwZPje',
+        fullName: "Trần Thị B",
+        sex: "0",
+        dob: "1993-05-15",
+        phoneNumber: "0912345678",
+        address: "Hồ Chí Minh",
+        avatarUrl: null,
+        role: "user",
+        position: "STAFF",
+        position_1: "TESTER",
+        position_level: "MIDDLE",
+        start_date: "2023-06-01",
+        department_id: null,
+      }
+    }),
+    database.user.findOrCreate({
+      where: { username: 'user3' },
+      defaults: {
+        username: "user3",
+        email: "user3@example.com",
+        password: '$2a$12$2C7ZzkR1EfWLzkrPf8UF8eA8l1EXS/.7FAQ0WRCxyE6gKLkjwZPje',
+        fullName: "Lê Văn C",
+        sex: "1",
+        dob: "1990-12-20",
+        phoneNumber: "0976543210",
+        address: "Đà Nẵng",
+        avatarUrl: null,
+        role: "user",
+        position: "STAFF",
+        position_1: "BA",
+        position_level: "SENIOR",
+        start_date: "2022-03-15",
+        department_id: null,
+      }
+    })
+  ]);
 }).catch(err => {
-  console.error('Lỗi khi tạo user admin:', err);
+  console.error('Error creating users:', err);
 });
-
 module.exports = database;

@@ -15,7 +15,7 @@ public class Task {
     private String taskFollower;
     private String taskAssignee;
 
-    public void fill(WebDriver driver){
+    public void fill(WebDriver driver) throws InterruptedException {
         WebElement taskNameField = driver.findElement(By.cssSelector("[formControlName='title']"));
         WebElement taskDescriptionField = driver.findElement(By.cssSelector("quill-editor[formControlName='description'] div[contenteditable='true']"));
         WebElement taskFollowerField = driver.findElement(By.cssSelector("issue-reporter-select"));
@@ -33,11 +33,7 @@ public class Task {
             followerOptions.getFirst().click();
         }
 
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+        Thread.sleep(1000);
 
         taskAssigneeField.click();
         List<WebElement> assigneeOptions = wait.until(ExpectedConditions.presenceOfAllElementsLocatedBy(
@@ -47,11 +43,8 @@ public class Task {
             for (WebElement option : assigneeOptions) {
                 option.click();
             }
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
+            Thread.sleep(1000);
+            taskAssigneeField.click();
             taskAssigneeField.click();
         }
     }
