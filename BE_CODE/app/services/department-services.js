@@ -74,10 +74,7 @@ exports.addADepartment = async (req, res) => {
   };
 
   await Department.create(body)
-    .then(res.send({ message: "Department successfully registered" }))
-    .catch((exception) => {
-      res.status(500).send({ message: exception.message });
-    });
+    .then(res.send({ message: "Department successfully registered" }));
 };
 
 exports.getDepartmentById = async (req, res) => {
